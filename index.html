@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .tab-btn { transition: all 0.3s ease; }
+        .tab-btn { transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem; }
         .tab-btn.active { color: #4f46e5; border-color: #4f46e5; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -23,6 +23,16 @@
         .modal-backdrop { background-color: rgba(0,0,0,0.5); }
         .modal { transition: opacity 0.3s ease, transform 0.3s ease; }
         .loading-spinner { border-top-color: #4f46e5; }
+        .modal.hidden, .modal-backdrop.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+        .modal, .modal-backdrop {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -33,14 +43,19 @@
     </div>
 
     <div class="max-w-7xl mx-auto">
-        <header class="mb-8 flex justify-between items-center">
+        <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Car Flip Financial Tracker</h1>
                 <p class="mt-2 text-gray-600">Your interactive dashboard for tracking vehicle flips.</p>
             </div>
-            <div>
-                <button id="addVehicleBtn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">
-                    + Add Vehicle
+            <div class="mt-4 sm:mt-0 flex items-center gap-4">
+                 <button id="addExpenseBtn" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    Add Expense
+                </button>
+                 <button id="addLaborBtn" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-sky-700 transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    Add Labor
                 </button>
             </div>
         </header>
@@ -48,37 +63,54 @@
         <div id="tabs" class="bg-white rounded-lg shadow-md">
             <!-- Tab Buttons -->
             <div class="border-b border-gray-200">
-                <nav class="flex -mb-px">
-                    <button class="tab-btn active p-4 font-medium" data-tab="dashboard">📊 Dashboard</button>
-                    <button class="tab-btn p-4 font-medium" data-tab="vehicles">🚗 Vehicle Log</button>
-                    <button class="tab-btn p-4 font-medium" data-tab="expenses">💸 Expense Log</button>
+                <nav class="flex -mb-px px-4">
+                    <button class="tab-btn active p-4 font-medium" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>Dashboard</button>
+                    <button class="tab-btn p-4 font-medium" data-tab="vehicles"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16.5 17.5 13H22v-2h-4.5l-3.5-3.5"/><path d="M8 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><path d="M15 9h-1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1"/><path d="M5 11h1"/><path d="M5 15h1"/><circle cx="8.5" cy="11.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="14.5" r=".5" fill="currentColor"/></svg>Vehicle Log</button>
+                    <button class="tab-btn p-4 font-medium" data-tab="expenses"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h8"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M18 14h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3H14"/><path d="M20 12v10"/></svg>Expense Log</button>
+                    <button class="tab-btn p-4 font-medium" data-tab="labor"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Labor Log</button>
                 </nav>
             </div>
 
             <!-- Dashboard Tab -->
             <div id="dashboard" class="tab-content active p-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="bg-gray-100 p-6 rounded-lg"><h3 class="text-sm font-medium text-gray-500">Total Investment</h3><p class="text-3xl font-bold text-gray-800" id="totalInvestment">$0.00</p></div>
                     <div class="bg-gray-100 p-6 rounded-lg"><h3 class="text-sm font-medium text-gray-500">Total Sales</h3><p class="text-3xl font-bold text-gray-800" id="totalSales">$0.00</p></div>
-                    <div class="total-profit-card p-6 rounded-lg"><h3 class="text-sm font-medium text-indigo-200">Total Net Profit</h3><p class="text-3xl font-bold" id="totalProfit">$0.00</p></div>
+                    <div class="total-profit-card p-6 rounded-lg col-span-1 md:col-span-2 lg:col-span-1"><h3 class="text-sm font-medium text-indigo-200">Total Net Profit</h3><p class="text-3xl font-bold" id="totalProfit">$0.00</p></div>
+                    <div class="bg-gray-100 p-6 rounded-lg flex flex-col justify-center">
+                        <label for="hourlyRate" class="text-sm font-medium text-gray-500">My Hourly Rate</label>
+                        <div class="flex items-center mt-1">
+                            <span class="text-2xl font-bold text-gray-500 mr-2">$</span>
+                            <input type="number" id="hourlyRate" class="text-2xl font-bold text-gray-800 bg-transparent w-full focus:outline-none" value="50">
+                        </div>
+                    </div>
                 </div>
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Profit & Loss Summary</h2>
-                <div class="table-container"><table id="dashboardTable"><thead><tr><th>Vehicle ID</th><th>Vehicle</th><th>Purchase Price</th><th>Total Expenses</th><th>Total Cost</th><th>Sale Price</th><th>Net Profit</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                <div class="table-container"><table id="dashboardTable"><thead><tr><th>Vehicle</th><th>Purchase Price</th><th>Expenses</th><th>Labor Cost</th><th>Total Cost</th><th>Sale Price</th><th>Net Profit</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
             </div>
 
             <!-- Vehicle Log Tab -->
             <div id="vehicles" class="tab-content p-6">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Vehicle Log</h2>
+                 <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-700">Vehicle Log</h2>
+                    <button id="addVehicleBtn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                        Add Vehicle
+                    </button>
+                </div>
                 <div class="table-container"><table id="vehicleTable"><thead><tr><th>Vehicle ID</th><th>Make</th><th>Model</th><th>Year</th><th>VIN</th><th>Purchase Date</th><th>Purchase Price</th><th>Sale Date</th><th>Sale Price</th></tr></thead><tbody></tbody></table></div>
             </div>
 
             <!-- Expense Log Tab -->
             <div id="expenses" class="tab-content p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-700">Expense Log</h2>
-                    <button id="addExpenseBtn" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition-colors">+ Add Expense</button>
-                </div>
-                <div class="table-container"><table id="expenseTable"><thead><tr><th>Date</th><th>Vehicle ID</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Expense Log</h2>
+                <div class="table-container"><table id="expenseTable"><thead><tr><th>Date</th><th>Vehicle</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+            </div>
+            
+            <!-- Labor Log Tab -->
+            <div id="labor" class="tab-content p-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Labor Log</h2>
+                <div class="table-container"><table id="laborTable"><thead><tr><th>Date</th><th>Vehicle</th><th>Hours</th><th>Description</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
             </div>
         </div>
     </div>
@@ -100,7 +132,7 @@
                     <input class="p-2 border rounded" type="number" step="0.01" id="vehicleSalePrice" placeholder="Sale Price">
                 </div>
                 <div class="flex justify-end mt-6">
-                    <button type="button" id="cancelVehicle" class="mr-4 py-2 px-4 rounded">Cancel</button>
+                    <button type="button" id="cancelVehicle" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
                     <button type="submit" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg">Save Vehicle</button>
                 </div>
             </form>
@@ -114,56 +146,100 @@
             <form id="expenseForm">
                 <input type="hidden" id="expenseId">
                 <div class="grid grid-cols-1 gap-4">
-                    <select id="expenseVehicleId" class="p-2 border rounded" required></select>
+                    <select id="expenseVehicleId" class="p-2 border rounded bg-white" required></select>
                     <input class="p-2 border rounded" type="date" id="expenseDate" required>
                     <input class="p-2 border rounded" type="text" id="expenseCategory" placeholder="Category (e.g., Parts, Repairs)" required>
                     <input class="p-2 border rounded" type="text" id="expenseDescription" placeholder="Description (e.g., New tires)">
                     <input class="p-2 border rounded" type="number" step="0.01" id="expenseAmount" placeholder="Amount" required>
                 </div>
                 <div class="flex justify-end mt-6">
-                    <button type="button" id="cancelExpense" class="mr-4 py-2 px-4 rounded">Cancel</button>
+                    <button type="button" id="cancelExpense" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
                     <button type="submit" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg">Save Expense</button>
                 </div>
             </form>
         </div>
     </div>
+    
+    <!-- Add/Edit Labor Modal -->
+    <div id="laborModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
+        <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
+            <h2 id="laborModalTitle" class="text-2xl font-bold mb-6">Add Labor Entry</h2>
+            <form id="laborForm">
+                <input type="hidden" id="laborId">
+                <div class="grid grid-cols-1 gap-4">
+                    <select id="laborVehicleId" class="p-2 border rounded bg-white" required></select>
+                    <input class="p-2 border rounded" type="date" id="laborDate" required>
+                    <input class="p-2 border rounded" type="number" step="0.1" id="laborHours" placeholder="Hours Worked" required>
+                    <input class="p-2 border rounded" type="text" id="laborDescription" placeholder="Description (e.g., Replaced alternator)">
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button type="button" id="cancelLabor" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                    <button type="submit" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg">Save Labor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal bg-white rounded-lg shadow-xl w-full max-w-sm p-6">
+            <h2 class="text-lg font-bold mb-4" id="confirmModalTitle">Are you sure?</h2>
+            <p id="confirmModalMessage" class="text-gray-600 mb-6">This action cannot be undone.</p>
+            <div class="flex justify-end">
+                <button id="confirmCancel" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                <button id="confirmAction" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg">Delete</button>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module">
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        
-
-   
-        const firebaseConfig = {
-            apiKey: "AIzaSyBDOAD40Eq9eo9N_XQMc5qG75wDfjYngvA",
-            authDomain: "car-flip-tracker-47.firebaseapp.com",
-            projectId: "car-flip-tracker-47",
-            storageBucket: "car-flip-tracker-47.firebasestorage.app",
-            messagingSenderId: "773148296619",
-            appId: "1:773148296619:web:0efc1fb4a231c1ea3cbeee",
-            measurementId: "G-CYJDE8ETB4"
-                };
-        
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'car-flip-tracker-default';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- App State ---
         let db, auth, userId;
         let vehicles = [];
         let expenses = [];
-        let vehicleUnsubscribe, expenseUnsubscribe;
+        let laborEntries = [];
+        let vehicleUnsubscribe = () => {}, expenseUnsubscribe = () => {}, laborUnsubscribe = () => {};
+        let confirmCallback = null;
 
         // --- UI Elements ---
         const loadingOverlay = document.getElementById('loading-overlay');
         const dashboardTableBody = document.querySelector('#dashboardTable tbody');
         const vehicleTableBody = document.querySelector('#vehicleTable tbody');
         const expenseTableBody = document.querySelector('#expenseTable tbody');
+        const laborTableBody = document.querySelector('#laborTable tbody');
+        const vehicleModal = document.getElementById('vehicleModal');
+        const expenseModal = document.getElementById('expenseModal');
+        const laborModal = document.getElementById('laborModal');
+        const confirmModal = document.getElementById('confirmModal');
+        const hourlyRateInput = document.getElementById('hourlyRate');
 
         // --- Initialization ---
         async function main() {
+            // ** FIXED: Hardcoded Firebase configuration for local browser use **
+            const firebaseConfig = {
+              apiKey: "AIzaSyBDOAD40Eq9eo9N_XQMc5qG75wDfjYngvA",
+              authDomain: "car-flip-tracker-47.firebaseapp.com",
+              projectId: "car-flip-tracker-47",
+              storageBucket: "car-flip-tracker-47.firebasestorage.app",
+              messagingSenderId: "773148296619",
+              appId: "1:773148296619:web:0efc1fb4a231c1ea3cbeee",
+              measurementId: "G-CYJDE8ETB4"
+            };
+            
+            // This is a placeholder for local use. In a real app, you might have different users.
+            const appId = 'car-flip-tracker-local';
+
+            if (!firebaseConfig) {
+                loadingOverlay.innerHTML = '<p class="text-red-500">Firebase configuration is missing. App cannot start.</p>';
+                return;
+            }
+
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
@@ -171,52 +247,56 @@
             onAuthStateChanged(auth, user => {
                 if (user) {
                     userId = user.uid;
-                    console.log("User authenticated with UID:", userId);
-                    setupListeners();
-                    loadingOverlay.style.display = 'none';
+                    setupListeners(appId);
+                    loadingOverlay.classList.add('hidden');
                 } else {
-                    console.log("No user signed in.");
                     loadingOverlay.innerHTML = '<p>Authentication failed. Please refresh.</p>';
                 }
             });
 
             try {
-                if (initialAuthToken) {
-                    // In a real environment, this token would be used to sign in.
-                    // For this example, we'll use anonymous sign-in for simplicity.
-                    await signInAnonymously(auth);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // ** FIXED: Simplified authentication for local browser use **
+                await signInAnonymously(auth);
             } catch (error) {
                 console.error("Authentication Error:", error);
-                loadingOverlay.innerHTML = `<p>Error connecting to database: ${error.message}</p>`;
+                loadingOverlay.innerHTML = `<p class="text-red-500">Error connecting to database: ${error.message}</p>`;
             }
         }
         
         // --- Firestore Listeners ---
-        function setupListeners() {
-            if (vehicleUnsubscribe) vehicleUnsubscribe();
+        function setupListeners(appId) {
+            if (!userId) return;
+            vehicleUnsubscribe();
+            expenseUnsubscribe();
+            laborUnsubscribe();
+
             const vehiclesCollection = collection(db, 'artifacts', appId, 'users', userId, 'vehicles');
             vehicleUnsubscribe = onSnapshot(query(vehiclesCollection), (snapshot) => {
                 vehicles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderAll();
-            });
+            }, err => console.error("Vehicle listener error:", err));
 
-            if (expenseUnsubscribe) expenseUnsubscribe();
             const expensesCollection = collection(db, 'artifacts', appId, 'users', userId, 'expenses');
             expenseUnsubscribe = onSnapshot(query(expensesCollection), (snapshot) => {
                 expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderAll();
-            });
+            }, err => console.error("Expense listener error:", err));
+            
+            const laborCollection = collection(db, 'artifacts', appId, 'users', userId, 'labor');
+            laborUnsubscribe = onSnapshot(query(laborCollection), (snapshot) => {
+                laborEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAll();
+            }, err => console.error("Labor listener error:", err));
         }
 
         // --- Rendering Logic ---
         function renderAll() {
+            if (!document.body.contains(dashboardTableBody)) return;
             renderVehicleTable();
             renderExpenseTable();
+            renderLaborTable();
             renderDashboard();
-            updateExpenseModalDropdown();
+            updateVehicleDropdowns();
         }
 
         function formatCurrency(value) {
@@ -228,16 +308,22 @@
             dashboardTableBody.innerHTML = '';
             let totalInvestment = 0;
             let totalSales = 0;
+            const hourlyRate = parseFloat(hourlyRateInput.value) || 0;
 
             vehicles.forEach(v => {
                 const vehicleExpenses = expenses.filter(e => e.vehicleId === v.id);
                 const totalExpenseAmount = vehicleExpenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+                
+                const vehicleLabor = laborEntries.filter(l => l.vehicleId === v.id);
+                const totalLaborHours = vehicleLabor.reduce((sum, l) => sum + (parseFloat(l.hours) || 0), 0);
+                const laborCost = totalLaborHours * hourlyRate;
+
                 const purchasePrice = parseFloat(v.purchasePrice) || 0;
                 const salePrice = parseFloat(v.salePrice) || 0;
-                const totalCost = purchasePrice + totalExpenseAmount;
+                const totalCost = purchasePrice + totalExpenseAmount + laborCost;
                 const netProfit = salePrice > 0 ? salePrice - totalCost : 0;
                 
-                totalInvestment += purchasePrice + totalExpenseAmount;
+                totalInvestment += totalCost;
                 if(salePrice > 0) totalSales += salePrice;
 
                 const status = v.saleDate ? (netProfit >= 0 ? 
@@ -247,16 +333,17 @@
 
                 const row = `
                     <tr>
-                        <td>${v.id.substring(0, 6)}...</td>
                         <td>${v.year} ${v.make} ${v.model}</td>
                         <td>${formatCurrency(purchasePrice)}</td>
                         <td>${formatCurrency(totalExpenseAmount)}</td>
+                        <td>${formatCurrency(laborCost)} (${totalLaborHours.toFixed(1)}h)</td>
                         <td>${formatCurrency(totalCost)}</td>
                         <td>${v.saleDate ? formatCurrency(salePrice) : '-'}</td>
                         <td class="${netProfit >= 0 ? 'profit' : 'loss'} font-semibold">${v.saleDate ? formatCurrency(netProfit) : '-'}</td>
                         <td>${status}</td>
                         <td class="flex items-center gap-2">
                             <button class="edit-vehicle-btn text-sm text-blue-600 hover:underline" data-id="${v.id}">Edit</button>
+                            <button class="delete-vehicle-btn text-sm text-red-600 hover:underline" data-id="${v.id}">Delete</button>
                         </td>
                     </tr>
                 `;
@@ -268,14 +355,15 @@
             document.getElementById('totalProfit').textContent = formatCurrency(totalSales - totalInvestment);
             
             document.querySelectorAll('.edit-vehicle-btn').forEach(btn => btn.addEventListener('click', (e) => openVehicleModal(e.target.dataset.id)));
+            document.querySelectorAll('.delete-vehicle-btn').forEach(btn => btn.addEventListener('click', (e) => deleteVehicle(e.target.dataset.id)));
         }
 
         function renderVehicleTable() {
             vehicleTableBody.innerHTML = '';
-            vehicles.forEach(v => {
+            vehicles.sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate)).forEach(v => {
                 const row = `
                     <tr>
-                        <td>${v.id.substring(0,6)}...</td>
+                        <td class="font-mono text-xs">${v.id.substring(0,6)}</td>
                         <td>${v.make}</td>
                         <td>${v.model}</td>
                         <td>${v.year}</td>
@@ -292,13 +380,13 @@
 
         function renderExpenseTable() {
             expenseTableBody.innerHTML = '';
-            expenses.forEach(e => {
+            expenses.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(e => {
                 const vehicle = vehicles.find(v => v.id === e.vehicleId);
                 const vehicleName = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'Unknown Vehicle';
                 const row = `
                     <tr>
                         <td>${e.date}</td>
-                        <td>${vehicleName} (${e.vehicleId.substring(0,6)}...)</td>
+                        <td>${vehicleName} <span class="font-mono text-xs">(${e.vehicleId.substring(0,6)})</span></td>
                         <td>${e.category}</td>
                         <td>${e.description || '-'}</td>
                         <td>${formatCurrency(e.amount)}</td>
@@ -315,16 +403,38 @@
             document.querySelectorAll('.delete-expense-btn').forEach(btn => btn.addEventListener('click', (e) => deleteExpense(e.target.dataset.id)));
         }
         
-        // --- Modal Logic ---
-        const vehicleModal = document.getElementById('vehicleModal');
-        const expenseModal = document.getElementById('expenseModal');
+        function renderLaborTable() {
+            laborTableBody.innerHTML = '';
+            laborEntries.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(l => {
+                const vehicle = vehicles.find(v => v.id === l.vehicleId);
+                const vehicleName = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'Unknown Vehicle';
+                const row = `
+                    <tr>
+                        <td>${l.date}</td>
+                        <td>${vehicleName} <span class="font-mono text-xs">(${l.vehicleId.substring(0,6)})</span></td>
+                        <td>${parseFloat(l.hours || 0).toFixed(1)}</td>
+                        <td>${l.description || '-'}</td>
+                        <td class="flex items-center gap-2">
+                            <button class="edit-labor-btn text-sm text-blue-600 hover:underline" data-id="${l.id}">Edit</button>
+                            <button class="delete-labor-btn text-sm text-red-600 hover:underline" data-id="${l.id}">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                laborTableBody.innerHTML += row;
+            });
 
+            document.querySelectorAll('.edit-labor-btn').forEach(btn => btn.addEventListener('click', (e) => openLaborModal(e.target.dataset.id)));
+            document.querySelectorAll('.delete-labor-btn').forEach(btn => btn.addEventListener('click', (e) => deleteLabor(e.target.dataset.id)));
+        }
+        
+        // --- Modal Logic ---
         function openVehicleModal(id = null) {
             const form = document.getElementById('vehicleForm');
             form.reset();
             document.getElementById('vehicleId').value = '';
             if (id) {
                 const vehicle = vehicles.find(v => v.id === id);
+                if(!vehicle) return;
                 document.getElementById('vehicleModalTitle').textContent = 'Edit Vehicle';
                 document.getElementById('vehicleId').value = vehicle.id;
                 document.getElementById('vehicleMake').value = vehicle.make;
@@ -347,6 +457,7 @@
             document.getElementById('expenseId').value = '';
             if (id) {
                 const expense = expenses.find(e => e.id === id);
+                if(!expense) return;
                 document.getElementById('expenseModalTitle').textContent = 'Edit Expense';
                 document.getElementById('expenseId').value = expense.id;
                 document.getElementById('expenseVehicleId').value = expense.vehicleId;
@@ -360,39 +471,76 @@
             expenseModal.classList.remove('hidden');
         }
 
-        function updateExpenseModalDropdown() {
-            const select = document.getElementById('expenseVehicleId');
-            const currentVal = select.value;
-            select.innerHTML = '<option value="">-- Select a Vehicle --</option>';
-            vehicles.forEach(v => {
-                select.innerHTML += `<option value="${v.id}">${v.year} ${v.make} ${v.model}</option>`;
+        function openLaborModal(id = null) {
+            const form = document.getElementById('laborForm');
+            form.reset();
+            document.getElementById('laborId').value = '';
+            if (id) {
+                const labor = laborEntries.find(l => l.id === id);
+                if(!labor) return;
+                document.getElementById('laborModalTitle').textContent = 'Edit Labor Entry';
+                document.getElementById('laborId').value = labor.id;
+                document.getElementById('laborVehicleId').value = labor.vehicleId;
+                document.getElementById('laborDate').value = labor.date;
+                document.getElementById('laborHours').value = labor.hours;
+                document.getElementById('laborDescription').value = labor.description || '';
+            } else {
+                document.getElementById('laborModalTitle').textContent = 'Add Labor Entry';
+            }
+            laborModal.classList.remove('hidden');
+        }
+
+        function updateVehicleDropdowns() {
+            const selects = [document.getElementById('expenseVehicleId'), document.getElementById('laborVehicleId')];
+            selects.forEach(select => {
+                if (!select) return;
+                const currentVal = select.value;
+                select.innerHTML = '<option value="" disabled selected>-- Select a Vehicle --</option>';
+                vehicles.forEach(v => {
+                    select.innerHTML += `<option value="${v.id}">${v.year} ${v.make} ${v.model}</option>`;
+                });
+                select.value = currentVal;
             });
-            select.value = currentVal;
+        }
+
+        function showConfirmModal(title, message, onConfirm) {
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalMessage').textContent = message;
+            confirmCallback = onConfirm;
+            confirmModal.classList.remove('hidden');
         }
 
         // --- Data Persistence (CRUD) ---
-        document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('vehicleId').value;
-            const data = {
-                make: document.getElementById('vehicleMake').value,
-                model: document.getElementById('vehicleModel').value,
-                year: document.getElementById('vehicleYear').value,
-                vin: document.getElementById('vehicleVin').value,
-                purchaseDate: document.getElementById('vehiclePurchaseDate').value,
-                purchasePrice: document.getElementById('vehiclePurchasePrice').value,
-                saleDate: document.getElementById('vehicleSaleDate').value,
-                salePrice: document.getElementById('vehicleSalePrice').value,
-            };
+        async function saveData(collectionName, id, data) {
+            const appId = 'car-flip-tracker-local';
+            const collectionRef = collection(db, 'artifacts', appId, 'users', userId, collectionName);
             try {
-                const collectionRef = collection(db, 'artifacts', appId, 'users', userId, 'vehicles');
                 if (id) {
                     await setDoc(doc(collectionRef, id), data);
                 } else {
                     await addDoc(collectionRef, data);
                 }
-                vehicleModal.classList.add('hidden');
-            } catch (error) { console.error("Error saving vehicle:", error); }
+            } catch (error) {
+                console.error(`Error saving to ${collectionName}:`, error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('vehicleId').value;
+            const data = {
+                make: document.getElementById('vehicleMake').value.trim(),
+                model: document.getElementById('vehicleModel').value.trim(),
+                year: document.getElementById('vehicleYear').value,
+                vin: document.getElementById('vehicleVin').value.trim(),
+                purchaseDate: document.getElementById('vehiclePurchaseDate').value,
+                purchasePrice: document.getElementById('vehiclePurchasePrice').value,
+                saleDate: document.getElementById('vehicleSaleDate').value,
+                salePrice: document.getElementById('vehicleSalePrice').value,
+            };
+            await saveData('vehicles', id, data);
+            vehicleModal.classList.add('hidden');
         });
 
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
@@ -401,35 +549,100 @@
             const data = {
                 vehicleId: document.getElementById('expenseVehicleId').value,
                 date: document.getElementById('expenseDate').value,
-                category: document.getElementById('expenseCategory').value,
-                description: document.getElementById('expenseDescription').value,
+                category: document.getElementById('expenseCategory').value.trim(),
+                description: document.getElementById('expenseDescription').value.trim(),
                 amount: document.getElementById('expenseAmount').value,
             };
-            try {
-                const collectionRef = collection(db, 'artifacts', appId, 'users', userId, 'expenses');
-                if (id) {
-                    await setDoc(doc(collectionRef, id), data);
-                } else {
-                    await addDoc(collectionRef, data);
-                }
-                expenseModal.classList.add('hidden');
-            } catch (error) { console.error("Error saving expense:", error); }
+            if (!data.vehicleId) { alert("Please select a vehicle."); return; }
+            await saveData('expenses', id, data);
+            expenseModal.classList.add('hidden');
+        });
+        
+        document.getElementById('laborForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('laborId').value;
+            const data = {
+                vehicleId: document.getElementById('laborVehicleId').value,
+                date: document.getElementById('laborDate').value,
+                hours: document.getElementById('laborHours').value,
+                description: document.getElementById('laborDescription').value.trim(),
+            };
+            if (!data.vehicleId) { alert("Please select a vehicle."); return; }
+            await saveData('labor', id, data);
+            laborModal.classList.add('hidden');
         });
 
-        async function deleteExpense(id) {
-            if (confirm('Are you sure you want to delete this expense?')) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'expenses', id));
-                } catch (error) { console.error("Error deleting expense:", error); }
-            }
+        async function deleteVehicle(id) {
+            const vehicle = vehicles.find(v => v.id === id);
+            if (!vehicle) return;
+            
+            showConfirmModal(
+                `Delete ${vehicle.year} ${vehicle.make}?`,
+                "This will also delete ALL associated expenses and labor. This action cannot be undone.",
+                async () => {
+                    try {
+                        const appId = 'car-flip-tracker-local';
+                        const batch = writeBatch(db);
+                        
+                        const collectionsToDelete = ['expenses', 'labor'];
+                        for (const coll of collectionsToDelete) {
+                            const q = query(collection(db, 'artifacts', appId, 'users', userId, coll), where("vehicleId", "==", id));
+                            const docs = await getDocs(q);
+                            docs.forEach(doc => batch.delete(doc.ref));
+                        }
+                        
+                        const vehicleRef = doc(db, 'artifacts', appId, 'users', userId, 'vehicles', id);
+                        batch.delete(vehicleRef);
+
+                        await batch.commit();
+                    } catch (error) {
+                        console.error("Error deleting vehicle and its data:", error);
+                        alert(`Error: ${error.message}`);
+                    }
+                }
+            );
         }
+
+        async function deleteItem(collectionName, id, itemName) {
+             showConfirmModal(
+                `Delete ${itemName}?`,
+                `Are you sure you want to permanently delete this ${itemName}?`,
+                async () => {
+                    try {
+                        const appId = 'car-flip-tracker-local';
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, collectionName, id));
+                    } catch (error) { 
+                        console.error(`Error deleting ${itemName}:`, error); 
+                        alert(`Error: ${error.message}`);
+                    }
+                }
+            );
+        }
+        
+        const deleteExpense = (id) => deleteItem('expenses', id, 'expense');
+        const deleteLabor = (id) => deleteItem('labor', id, 'labor entry');
 
         // --- Event Listeners ---
         document.getElementById('addVehicleBtn').addEventListener('click', () => openVehicleModal());
         document.getElementById('addExpenseBtn').addEventListener('click', () => openExpenseModal());
+        document.getElementById('addLaborBtn').addEventListener('click', () => openLaborModal());
+        
         document.getElementById('cancelVehicle').addEventListener('click', () => vehicleModal.classList.add('hidden'));
         document.getElementById('cancelExpense').addEventListener('click', () => expenseModal.classList.add('hidden'));
+        document.getElementById('cancelLabor').addEventListener('click', () => laborModal.classList.add('hidden'));
         
+        hourlyRateInput.addEventListener('change', renderDashboard);
+        
+        document.getElementById('confirmCancel').addEventListener('click', () => {
+            confirmModal.classList.add('hidden');
+            confirmCallback = null;
+        });
+        document.getElementById('confirmAction').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            confirmModal.classList.add('hidden');
+            confirmCallback = null;
+        });
+
         const tabs = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
         tabs.forEach(tab => {
