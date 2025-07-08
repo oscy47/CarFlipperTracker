@@ -774,6 +774,10 @@
         // --- Start App ---
         main();
         setupEventListeners();
+        setTimeout(() => {
+    loadingOverlay.classList.add('hidden');
+    renderAll(); // Ensure fresh UI on login
+}, 1500);
     </script>
 </body>
 </html>
