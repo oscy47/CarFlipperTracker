@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Car Flip Financial Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .tab-btn { transition: all 0.3s ease; }
+        .tab-btn.active { color: #4f46e5; border-color: #4f46e5; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+        th { background-color: #f9fafb; font-weight: 600; color: #374151; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+        tbody tr:hover { background-color: #f9fafb; }
+        .profit { color: #10b981; }
+        .loss { color: #ef4444; }
+        .total-profit-card { background: linear-gradient(135deg, #6d28d9, #4f46e5); color: white; }
+        .modal-backdrop { background-color: rgba(0,0,0,0.5); }
+        .modal { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .loading-spinner { border-top-color: #4f46e5; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+        <div class="loading-spinner animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-indigo-600"></div>
+        <p class="mt-4 text-gray-600">Connecting to database...</p>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Car Flip Financial Tracker</h1>
+                <p class="mt-2 text-gray-600">Your interactive dashboard for tracking vehicle flips.</p>
+            </div>
+            <div>
+                <button id="addVehicleBtn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">
+                    + Add Vehicle
+                </button>
+            </div>
+        </header>
+
+        <div id="tabs" class="bg-white rounded-lg shadow-md">
+            <!-- Tab Buttons -->
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px">
+                    <button class="tab-btn active p-4 font-medium" data-tab="dashboard">📊 Dashboard</button>
+                    <button class="tab-btn p-4 font-medium" data-tab="vehicles">🚗 Vehicle Log</button>
+                    <button class="tab-btn p-4 font-medium" data-tab="expenses">💸 Expense Log</button>
+                </nav>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gray-100 p-6 rounded-lg"><h3 class="text-sm font-medium text-gray-500">Total Investment</h3><p class="text-3xl font-bold text-gray-800" id="totalInvestment">$0.00</p></div>
+                    <div class="bg-gray-100 p-6 rounded-lg"><h3 class="text-sm font-medium text-gray-500">Total Sales</h3><p class="text-3xl font-bold text-gray-800" id="totalSales">$0.00</p></div>
+                    <div class="total-profit-card p-6 rounded-lg"><h3 class="text-sm font-medium text-indigo-200">Total Net Profit</h3><p class="text-3xl font-bold" id="totalProfit">$0.00</p></div>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Profit & Loss Summary</h2>
+                <div class="table-container"><table id="dashboardTable"><thead><tr><th>Vehicle ID</th><th>Vehicle</th><th>Purchase Price</th><th>Total Expenses</th><th>Total Cost</th><th>Sale Price</th><th>Net Profit</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+            </div>
+
+            <!-- Vehicle Log Tab -->
+            <div id="vehicles" class="tab-content p-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Vehicle Log</h2>
+                <div class="table-container"><table id="vehicleTable"><thead><tr><th>Vehicle ID</th><th>Make</th><th>Model</th><th>Year</th><th>VIN</th><th>Purchase Date</th><th>Purchase Price</th><th>Sale Date</th><th>Sale Price</th></tr></thead><tbody></tbody></table></div>
+            </div>
+
+            <!-- Expense Log Tab -->
+            <div id="expenses" class="tab-content p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-700">Expense Log</h2>
+                    <button id="addExpenseBtn" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition-colors">+ Add Expense</button>
+                </div>
+                <div class="table-container"><table id="expenseTable"><thead><tr><th>Date</th><th>Vehicle ID</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Vehicle Modal -->
+    <div id="vehicleModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
+        <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
+            <h2 id="vehicleModalTitle" class="text-2xl font-bold mb-6">Add New Vehicle</h2>
+            <form id="vehicleForm">
+                <input type="hidden" id="vehicleId">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input class="p-2 border rounded" type="text" id="vehicleMake" placeholder="Make (e.g., Honda)" required>
+                    <input class="p-2 border rounded" type="text" id="vehicleModel" placeholder="Model (e.g., Civic)" required>
+                    <input class="p-2 border rounded" type="number" id="vehicleYear" placeholder="Year (e.g., 2015)" required>
+                    <input class="p-2 border rounded" type="text" id="vehicleVin" placeholder="VIN">
+                    <input class="p-2 border rounded" type="date" id="vehiclePurchaseDate" required>
+                    <input class="p-2 border rounded" type="number" step="0.01" id="vehiclePurchasePrice" placeholder="Purchase Price" required>
+                    <input class="p-2 border rounded" type="date" id="vehicleSaleDate">
+                    <input class="p-2 border rounded" type="number" step="0.01" id="vehicleSalePrice" placeholder="Sale Price">
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button type="button" id="cancelVehicle" class="mr-4 py-2 px-4 rounded">Cancel</button>
+                    <button type="submit" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg">Save Vehicle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Expense Modal -->
+    <div id="expenseModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
+        <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
+            <h2 id="expenseModalTitle" class="text-2xl font-bold mb-6">Add New Expense</h2>
+            <form id="expenseForm">
+                <input type="hidden" id="expenseId">
+                <div class="grid grid-cols-1 gap-4">
+                    <select id="expenseVehicleId" class="p-2 border rounded" required></select>
+                    <input class="p-2 border rounded" type="date" id="expenseDate" required>
+                    <input class="p-2 border rounded" type="text" id="expenseCategory" placeholder="Category (e.g., Parts, Repairs)" required>
+                    <input class="p-2 border rounded" type="text" id="expenseDescription" placeholder="Description (e.g., New tires)">
+                    <input class="p-2 border rounded" type="number" step="0.01" id="expenseAmount" placeholder="Amount" required>
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button type="button" id="cancelExpense" class="mr-4 py-2 px-4 rounded">Cancel</button>
+                    <button type="submit" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg">Save Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        
+
+   
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDOAD40Eq9eo9N_XQMc5qG75wDfjYngvA",
+            authDomain: "car-flip-tracker-47.firebaseapp.com",
+            projectId: "car-flip-tracker-47",
+            storageBucket: "car-flip-tracker-47.firebasestorage.app",
+            messagingSenderId: "773148296619",
+            appId: "1:773148296619:web:0efc1fb4a231c1ea3cbeee",
+            measurementId: "G-CYJDE8ETB4"
+                };
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'car-flip-tracker-default';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- App State ---
+        let db, auth, userId;
+        let vehicles = [];
+        let expenses = [];
+        let vehicleUnsubscribe, expenseUnsubscribe;
+
+        // --- UI Elements ---
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const dashboardTableBody = document.querySelector('#dashboardTable tbody');
+        const vehicleTableBody = document.querySelector('#vehicleTable tbody');
+        const expenseTableBody = document.querySelector('#expenseTable tbody');
+
+        // --- Initialization ---
+        async function main() {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            onAuthStateChanged(auth, user => {
+                if (user) {
+                    userId = user.uid;
+                    console.log("User authenticated with UID:", userId);
+                    setupListeners();
+                    loadingOverlay.style.display = 'none';
+                } else {
+                    console.log("No user signed in.");
+                    loadingOverlay.innerHTML = '<p>Authentication failed. Please refresh.</p>';
+                }
+            });
+
+            try {
+                if (initialAuthToken) {
+                    // In a real environment, this token would be used to sign in.
+                    // For this example, we'll use anonymous sign-in for simplicity.
+                    await signInAnonymously(auth);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication Error:", error);
+                loadingOverlay.innerHTML = `<p>Error connecting to database: ${error.message}</p>`;
+            }
+        }
+        
+        // --- Firestore Listeners ---
+        function setupListeners() {
+            if (vehicleUnsubscribe) vehicleUnsubscribe();
+            const vehiclesCollection = collection(db, 'artifacts', appId, 'users', userId, 'vehicles');
+            vehicleUnsubscribe = onSnapshot(query(vehiclesCollection), (snapshot) => {
+                vehicles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAll();
+            });
+
+            if (expenseUnsubscribe) expenseUnsubscribe();
+            const expensesCollection = collection(db, 'artifacts', appId, 'users', userId, 'expenses');
+            expenseUnsubscribe = onSnapshot(query(expensesCollection), (snapshot) => {
+                expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAll();
+            });
+        }
+
+        // --- Rendering Logic ---
+        function renderAll() {
+            renderVehicleTable();
+            renderExpenseTable();
+            renderDashboard();
+            updateExpenseModalDropdown();
+        }
+
+        function formatCurrency(value) {
+            const num = parseFloat(value) || 0;
+            return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+        }
+
+        function renderDashboard() {
+            dashboardTableBody.innerHTML = '';
+            let totalInvestment = 0;
+            let totalSales = 0;
+
+            vehicles.forEach(v => {
+                const vehicleExpenses = expenses.filter(e => e.vehicleId === v.id);
+                const totalExpenseAmount = vehicleExpenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+                const purchasePrice = parseFloat(v.purchasePrice) || 0;
+                const salePrice = parseFloat(v.salePrice) || 0;
+                const totalCost = purchasePrice + totalExpenseAmount;
+                const netProfit = salePrice > 0 ? salePrice - totalCost : 0;
+                
+                totalInvestment += purchasePrice + totalExpenseAmount;
+                if(salePrice > 0) totalSales += salePrice;
+
+                const status = v.saleDate ? (netProfit >= 0 ? 
+                    '<span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">Sold</span>' : 
+                    '<span class="px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">Sold (Loss)</span>') : 
+                    '<span class="px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">In Progress</span>';
+
+                const row = `
+                    <tr>
+                        <td>${v.id.substring(0, 6)}...</td>
+                        <td>${v.year} ${v.make} ${v.model}</td>
+                        <td>${formatCurrency(purchasePrice)}</td>
+                        <td>${formatCurrency(totalExpenseAmount)}</td>
+                        <td>${formatCurrency(totalCost)}</td>
+                        <td>${v.saleDate ? formatCurrency(salePrice) : '-'}</td>
+                        <td class="${netProfit >= 0 ? 'profit' : 'loss'} font-semibold">${v.saleDate ? formatCurrency(netProfit) : '-'}</td>
+                        <td>${status}</td>
+                        <td class="flex items-center gap-2">
+                            <button class="edit-vehicle-btn text-sm text-blue-600 hover:underline" data-id="${v.id}">Edit</button>
+                        </td>
+                    </tr>
+                `;
+                dashboardTableBody.innerHTML += row;
+            });
+            
+            document.getElementById('totalInvestment').textContent = formatCurrency(totalInvestment);
+            document.getElementById('totalSales').textContent = formatCurrency(totalSales);
+            document.getElementById('totalProfit').textContent = formatCurrency(totalSales - totalInvestment);
+            
+            document.querySelectorAll('.edit-vehicle-btn').forEach(btn => btn.addEventListener('click', (e) => openVehicleModal(e.target.dataset.id)));
+        }
+
+        function renderVehicleTable() {
+            vehicleTableBody.innerHTML = '';
+            vehicles.forEach(v => {
+                const row = `
+                    <tr>
+                        <td>${v.id.substring(0,6)}...</td>
+                        <td>${v.make}</td>
+                        <td>${v.model}</td>
+                        <td>${v.year}</td>
+                        <td>${v.vin || '-'}</td>
+                        <td>${v.purchaseDate}</td>
+                        <td>${formatCurrency(v.purchasePrice)}</td>
+                        <td>${v.saleDate || '-'}</td>
+                        <td>${v.salePrice ? formatCurrency(v.salePrice) : '-'}</td>
+                    </tr>
+                `;
+                vehicleTableBody.innerHTML += row;
+            });
+        }
+
+        function renderExpenseTable() {
+            expenseTableBody.innerHTML = '';
+            expenses.forEach(e => {
+                const vehicle = vehicles.find(v => v.id === e.vehicleId);
+                const vehicleName = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'Unknown Vehicle';
+                const row = `
+                    <tr>
+                        <td>${e.date}</td>
+                        <td>${vehicleName} (${e.vehicleId.substring(0,6)}...)</td>
+                        <td>${e.category}</td>
+                        <td>${e.description || '-'}</td>
+                        <td>${formatCurrency(e.amount)}</td>
+                        <td class="flex items-center gap-2">
+                            <button class="edit-expense-btn text-sm text-blue-600 hover:underline" data-id="${e.id}">Edit</button>
+                            <button class="delete-expense-btn text-sm text-red-600 hover:underline" data-id="${e.id}">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                expenseTableBody.innerHTML += row;
+            });
+            
+            document.querySelectorAll('.edit-expense-btn').forEach(btn => btn.addEventListener('click', (e) => openExpenseModal(e.target.dataset.id)));
+            document.querySelectorAll('.delete-expense-btn').forEach(btn => btn.addEventListener('click', (e) => deleteExpense(e.target.dataset.id)));
+        }
+        
+        // --- Modal Logic ---
+        const vehicleModal = document.getElementById('vehicleModal');
+        const expenseModal = document.getElementById('expenseModal');
+
+        function openVehicleModal(id = null) {
+            const form = document.getElementById('vehicleForm');
+            form.reset();
+            document.getElementById('vehicleId').value = '';
+            if (id) {
+                const vehicle = vehicles.find(v => v.id === id);
+                document.getElementById('vehicleModalTitle').textContent = 'Edit Vehicle';
+                document.getElementById('vehicleId').value = vehicle.id;
+                document.getElementById('vehicleMake').value = vehicle.make;
+                document.getElementById('vehicleModel').value = vehicle.model;
+                document.getElementById('vehicleYear').value = vehicle.year;
+                document.getElementById('vehicleVin').value = vehicle.vin || '';
+                document.getElementById('vehiclePurchaseDate').value = vehicle.purchaseDate;
+                document.getElementById('vehiclePurchasePrice').value = vehicle.purchasePrice;
+                document.getElementById('vehicleSaleDate').value = vehicle.saleDate || '';
+                document.getElementById('vehicleSalePrice').value = vehicle.salePrice || '';
+            } else {
+                document.getElementById('vehicleModalTitle').textContent = 'Add New Vehicle';
+            }
+            vehicleModal.classList.remove('hidden');
+        }
+
+        function openExpenseModal(id = null) {
+            const form = document.getElementById('expenseForm');
+            form.reset();
+            document.getElementById('expenseId').value = '';
+            if (id) {
+                const expense = expenses.find(e => e.id === id);
+                document.getElementById('expenseModalTitle').textContent = 'Edit Expense';
+                document.getElementById('expenseId').value = expense.id;
+                document.getElementById('expenseVehicleId').value = expense.vehicleId;
+                document.getElementById('expenseDate').value = expense.date;
+                document.getElementById('expenseCategory').value = expense.category;
+                document.getElementById('expenseDescription').value = expense.description || '';
+                document.getElementById('expenseAmount').value = expense.amount;
+            } else {
+                document.getElementById('expenseModalTitle').textContent = 'Add New Expense';
+            }
+            expenseModal.classList.remove('hidden');
+        }
+
+        function updateExpenseModalDropdown() {
+            const select = document.getElementById('expenseVehicleId');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- Select a Vehicle --</option>';
+            vehicles.forEach(v => {
+                select.innerHTML += `<option value="${v.id}">${v.year} ${v.make} ${v.model}</option>`;
+            });
+            select.value = currentVal;
+        }
+
+        // --- Data Persistence (CRUD) ---
+        document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('vehicleId').value;
+            const data = {
+                make: document.getElementById('vehicleMake').value,
+                model: document.getElementById('vehicleModel').value,
+                year: document.getElementById('vehicleYear').value,
+                vin: document.getElementById('vehicleVin').value,
+                purchaseDate: document.getElementById('vehiclePurchaseDate').value,
+                purchasePrice: document.getElementById('vehiclePurchasePrice').value,
+                saleDate: document.getElementById('vehicleSaleDate').value,
+                salePrice: document.getElementById('vehicleSalePrice').value,
+            };
+            try {
+                const collectionRef = collection(db, 'artifacts', appId, 'users', userId, 'vehicles');
+                if (id) {
+                    await setDoc(doc(collectionRef, id), data);
+                } else {
+                    await addDoc(collectionRef, data);
+                }
+                vehicleModal.classList.add('hidden');
+            } catch (error) { console.error("Error saving vehicle:", error); }
+        });
+
+        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('expenseId').value;
+            const data = {
+                vehicleId: document.getElementById('expenseVehicleId').value,
+                date: document.getElementById('expenseDate').value,
+                category: document.getElementById('expenseCategory').value,
+                description: document.getElementById('expenseDescription').value,
+                amount: document.getElementById('expenseAmount').value,
+            };
+            try {
+                const collectionRef = collection(db, 'artifacts', appId, 'users', userId, 'expenses');
+                if (id) {
+                    await setDoc(doc(collectionRef, id), data);
+                } else {
+                    await addDoc(collectionRef, data);
+                }
+                expenseModal.classList.add('hidden');
+            } catch (error) { console.error("Error saving expense:", error); }
+        });
+
+        async function deleteExpense(id) {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'expenses', id));
+                } catch (error) { console.error("Error deleting expense:", error); }
+            }
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('addVehicleBtn').addEventListener('click', () => openVehicleModal());
+        document.getElementById('addExpenseBtn').addEventListener('click', () => openExpenseModal());
+        document.getElementById('cancelVehicle').addEventListener('click', () => vehicleModal.classList.add('hidden'));
+        document.getElementById('cancelExpense').addEventListener('click', () => expenseModal.classList.add('hidden'));
+        
+        const tabs = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(item => item.classList.remove('active'));
+                tabContents.forEach(item => item.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // --- Start App ---
+        main();
+    </script>
+</body>
+</html>
