@@ -98,7 +98,7 @@
                         Add Vehicle
                     </button>
                 </div>
-                <div class="table-container"><table id="vehicleTable"><thead><tr><th>Vehicle ID</th><th>Make</th><th>Model</th><th>Year</th><th>VIN</th><th>Purchase Date</th><th>Purchase Price</th><th>Sale Date</th><th>Sale Price</th></tr></thead><tbody></tbody></table></div>
+                <div class="table-container"><table id="vehicleTable"><thead><tr><th>Vehicle ID</th><th>Make</th><th>Model</th><th>Year</th><th>VIN</th><th>Purchase Date</th><th>Purchase Price</th><th>Sale Date</th><th>Sale Price</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
             </div>
 
             <!-- Expense Log Tab -->
@@ -192,7 +192,6 @@
         </div>
     </div>
 
-
     <script type="module">
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -221,22 +220,27 @@
 
         // --- Initialization ---
         async function main() {
-            // ** FIXED: Hardcoded Firebase configuration for local browser use **
+            // =================================================================================
+            // IMPORTANT: FIREBASE CONFIGURATION
+            // You must replace this with your own Firebase project's configuration.
+            // You can find this in your Firebase project settings.
+            // =================================================================================
             const firebaseConfig = {
-              apiKey: "AIzaSyBDOAD40Eq9eo9N_XQMc5qG75wDfjYngvA",
-              authDomain: "car-flip-tracker-47.firebaseapp.com",
-              projectId: "car-flip-tracker-47",
-              storageBucket: "car-flip-tracker-47.firebasestorage.app",
-              messagingSenderId: "773148296619",
-              appId: "1:773148296619:web:0efc1fb4a231c1ea3cbeee",
-              measurementId: "G-CYJDE8ETB4"
+              apiKey: "YOUR_API_KEY", // Replace with your API Key
+              authDomain: "YOUR_AUTH_DOMAIN", // Replace with your authDomain
+              projectId: "YOUR_PROJECT_ID",                 // Replace with your projectId
+              storageBucket: "YOUR_STORAGE_BUCKET", // Replace
+              messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace
+              appId: "YOUR_APP_ID", // Replace
             };
             
-            // This is a placeholder for local use. In a real app, you might have different users.
-            const appId = 'car-flip-tracker-local';
+            const appId = 'car-flip-tracker-cf'; // A unique ID for this app instance
 
-            if (!firebaseConfig) {
-                loadingOverlay.innerHTML = '<p class="text-red-500">Firebase configuration is missing. App cannot start.</p>';
+            if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
+                loadingOverlay.innerHTML = `<div class="p-4 text-center">
+                    <p class="font-bold text-red-600">Firebase configuration is missing or invalid.</p>
+                    <p class="text-sm text-gray-600 mt-2">Please edit the 'firebaseConfig' object in the script in <code>index.html</code> with your own project credentials.</p>
+                    </div>`;
                 return;
             }
 
@@ -247,7 +251,7 @@
             onAuthStateChanged(auth, user => {
                 if (user) {
                     userId = user.uid;
-                    setupListeners(appId);
+                    setupDataListeners(appId);
                     loadingOverlay.classList.add('hidden');
                 } else {
                     loadingOverlay.innerHTML = '<p>Authentication failed. Please refresh.</p>';
@@ -255,16 +259,15 @@
             });
 
             try {
-                // ** FIXED: Simplified authentication for local browser use **
                 await signInAnonymously(auth);
             } catch (error) {
                 console.error("Authentication Error:", error);
-                loadingOverlay.innerHTML = `<p class="text-red-500">Error connecting to database: ${error.message}</p>`;
+                loadingOverlay.innerHTML = `<p class="text-red-500">Error connecting to database: ${error.message}</p><p class="text-sm mt-2">Check your Firebase security rules and ensure Anonymous sign-in is enabled.</p>`;
             }
         }
         
         // --- Firestore Listeners ---
-        function setupListeners(appId) {
+        function setupDataListeners(appId) {
             if (!userId) return;
             vehicleUnsubscribe();
             expenseUnsubscribe();
@@ -292,10 +295,10 @@
         // --- Rendering Logic ---
         function renderAll() {
             if (!document.body.contains(dashboardTableBody)) return;
+            renderDashboard();
             renderVehicleTable();
             renderExpenseTable();
             renderLaborTable();
-            renderDashboard();
             updateVehicleDropdowns();
         }
 
@@ -323,8 +326,10 @@
                 const totalCost = purchasePrice + totalExpenseAmount + laborCost;
                 const netProfit = salePrice > 0 ? salePrice - totalCost : 0;
                 
-                totalInvestment += totalCost;
-                if(salePrice > 0) totalSales += salePrice;
+                totalInvestment += purchasePrice + totalExpenseAmount;
+                if (salePrice > 0) {
+                    totalSales += salePrice;
+                }
 
                 const status = v.saleDate ? (netProfit >= 0 ? 
                     '<span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">Sold</span>' : 
@@ -333,11 +338,11 @@
 
                 const row = `
                     <tr>
-                        <td>${v.year} ${v.make} ${v.model}</td>
+                        <td class="font-semibold">${v.year} ${v.make} ${v.model}</td>
                         <td>${formatCurrency(purchasePrice)}</td>
                         <td>${formatCurrency(totalExpenseAmount)}</td>
                         <td>${formatCurrency(laborCost)} (${totalLaborHours.toFixed(1)}h)</td>
-                        <td>${formatCurrency(totalCost)}</td>
+                        <td class="font-medium">${formatCurrency(totalCost)}</td>
                         <td>${v.saleDate ? formatCurrency(salePrice) : '-'}</td>
                         <td class="${netProfit >= 0 ? 'profit' : 'loss'} font-semibold">${v.saleDate ? formatCurrency(netProfit) : '-'}</td>
                         <td>${status}</td>
@@ -347,15 +352,13 @@
                         </td>
                     </tr>
                 `;
-                dashboardTableBody.innerHTML += row;
+                dashboardTableBody.insertAdjacentHTML('beforeend', row);
             });
             
+            const totalNetProfit = totalSales - totalInvestment;
             document.getElementById('totalInvestment').textContent = formatCurrency(totalInvestment);
             document.getElementById('totalSales').textContent = formatCurrency(totalSales);
-            document.getElementById('totalProfit').textContent = formatCurrency(totalSales - totalInvestment);
-            
-            document.querySelectorAll('.edit-vehicle-btn').forEach(btn => btn.addEventListener('click', (e) => openVehicleModal(e.target.dataset.id)));
-            document.querySelectorAll('.delete-vehicle-btn').forEach(btn => btn.addEventListener('click', (e) => deleteVehicle(e.target.dataset.id)));
+            document.getElementById('totalProfit').textContent = formatCurrency(totalNetProfit);
         }
 
         function renderVehicleTable() {
@@ -372,9 +375,13 @@
                         <td>${formatCurrency(v.purchasePrice)}</td>
                         <td>${v.saleDate || '-'}</td>
                         <td>${v.salePrice ? formatCurrency(v.salePrice) : '-'}</td>
+                        <td class="flex items-center gap-2">
+                            <button class="edit-vehicle-btn text-sm text-blue-600 hover:underline" data-id="${v.id}">Edit</button>
+                            <button class="delete-vehicle-btn text-sm text-red-600 hover:underline" data-id="${v.id}">Delete</button>
+                        </td>
                     </tr>
                 `;
-                vehicleTableBody.innerHTML += row;
+                vehicleTableBody.insertAdjacentHTML('beforeend', row);
             });
         }
 
@@ -396,11 +403,8 @@
                         </td>
                     </tr>
                 `;
-                expenseTableBody.innerHTML += row;
+                expenseTableBody.insertAdjacentHTML('beforeend', row);
             });
-            
-            document.querySelectorAll('.edit-expense-btn').forEach(btn => btn.addEventListener('click', (e) => openExpenseModal(e.target.dataset.id)));
-            document.querySelectorAll('.delete-expense-btn').forEach(btn => btn.addEventListener('click', (e) => deleteExpense(e.target.dataset.id)));
         }
         
         function renderLaborTable() {
@@ -420,11 +424,8 @@
                         </td>
                     </tr>
                 `;
-                laborTableBody.innerHTML += row;
+                laborTableBody.insertAdjacentHTML('beforeend', row);
             });
-
-            document.querySelectorAll('.edit-labor-btn').forEach(btn => btn.addEventListener('click', (e) => openLaborModal(e.target.dataset.id)));
-            document.querySelectorAll('.delete-labor-btn').forEach(btn => btn.addEventListener('click', (e) => deleteLabor(e.target.dataset.id)));
         }
         
         // --- Modal Logic ---
@@ -496,7 +497,7 @@
                 if (!select) return;
                 const currentVal = select.value;
                 select.innerHTML = '<option value="" disabled selected>-- Select a Vehicle --</option>';
-                vehicles.forEach(v => {
+                vehicles.sort((a,b) => `${a.year} ${a.make}`.localeCompare(`${b.year} ${b.make}`)).forEach(v => {
                     select.innerHTML += `<option value="${v.id}">${v.year} ${v.make} ${v.model}</option>`;
                 });
                 select.value = currentVal;
@@ -512,7 +513,7 @@
 
         // --- Data Persistence (CRUD) ---
         async function saveData(collectionName, id, data) {
-            const appId = 'car-flip-tracker-local';
+            const appId = 'car-flip-tracker-cf';
             const collectionRef = collection(db, 'artifacts', appId, 'users', userId, collectionName);
             try {
                 if (id) {
@@ -522,55 +523,9 @@
                 }
             } catch (error) {
                 console.error(`Error saving to ${collectionName}:`, error);
-                alert(`Error: ${error.message}`);
+                // Removed alert() to prevent blocking script execution
             }
         }
-
-        document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('vehicleId').value;
-            const data = {
-                make: document.getElementById('vehicleMake').value.trim(),
-                model: document.getElementById('vehicleModel').value.trim(),
-                year: document.getElementById('vehicleYear').value,
-                vin: document.getElementById('vehicleVin').value.trim(),
-                purchaseDate: document.getElementById('vehiclePurchaseDate').value,
-                purchasePrice: document.getElementById('vehiclePurchasePrice').value,
-                saleDate: document.getElementById('vehicleSaleDate').value,
-                salePrice: document.getElementById('vehicleSalePrice').value,
-            };
-            await saveData('vehicles', id, data);
-            vehicleModal.classList.add('hidden');
-        });
-
-        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('expenseId').value;
-            const data = {
-                vehicleId: document.getElementById('expenseVehicleId').value,
-                date: document.getElementById('expenseDate').value,
-                category: document.getElementById('expenseCategory').value.trim(),
-                description: document.getElementById('expenseDescription').value.trim(),
-                amount: document.getElementById('expenseAmount').value,
-            };
-            if (!data.vehicleId) { alert("Please select a vehicle."); return; }
-            await saveData('expenses', id, data);
-            expenseModal.classList.add('hidden');
-        });
-        
-        document.getElementById('laborForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('laborId').value;
-            const data = {
-                vehicleId: document.getElementById('laborVehicleId').value,
-                date: document.getElementById('laborDate').value,
-                hours: document.getElementById('laborHours').value,
-                description: document.getElementById('laborDescription').value.trim(),
-            };
-            if (!data.vehicleId) { alert("Please select a vehicle."); return; }
-            await saveData('labor', id, data);
-            laborModal.classList.add('hidden');
-        });
 
         async function deleteVehicle(id) {
             const vehicle = vehicles.find(v => v.id === id);
@@ -581,7 +536,7 @@
                 "This will also delete ALL associated expenses and labor. This action cannot be undone.",
                 async () => {
                     try {
-                        const appId = 'car-flip-tracker-local';
+                        const appId = 'car-flip-tracker-cf';
                         const batch = writeBatch(db);
                         
                         const collectionsToDelete = ['expenses', 'labor'];
@@ -597,7 +552,6 @@
                         await batch.commit();
                     } catch (error) {
                         console.error("Error deleting vehicle and its data:", error);
-                        alert(`Error: ${error.message}`);
                     }
                 }
             );
@@ -609,11 +563,10 @@
                 `Are you sure you want to permanently delete this ${itemName}?`,
                 async () => {
                     try {
-                        const appId = 'car-flip-tracker-local';
+                        const appId = 'car-flip-tracker-cf';
                         await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, collectionName, id));
                     } catch (error) { 
                         console.error(`Error deleting ${itemName}:`, error); 
-                        alert(`Error: ${error.message}`);
                     }
                 }
             );
@@ -622,40 +575,111 @@
         const deleteExpense = (id) => deleteItem('expenses', id, 'expense');
         const deleteLabor = (id) => deleteItem('labor', id, 'labor entry');
 
-        // --- Event Listeners ---
-        document.getElementById('addVehicleBtn').addEventListener('click', () => openVehicleModal());
-        document.getElementById('addExpenseBtn').addEventListener('click', () => openExpenseModal());
-        document.getElementById('addLaborBtn').addEventListener('click', () => openLaborModal());
-        
-        document.getElementById('cancelVehicle').addEventListener('click', () => vehicleModal.classList.add('hidden'));
-        document.getElementById('cancelExpense').addEventListener('click', () => expenseModal.classList.add('hidden'));
-        document.getElementById('cancelLabor').addEventListener('click', () => laborModal.classList.add('hidden'));
-        
-        hourlyRateInput.addEventListener('change', renderDashboard);
-        
-        document.getElementById('confirmCancel').addEventListener('click', () => {
-            confirmModal.classList.add('hidden');
-            confirmCallback = null;
-        });
-        document.getElementById('confirmAction').addEventListener('click', () => {
-            if (confirmCallback) confirmCallback();
-            confirmModal.classList.add('hidden');
-            confirmCallback = null;
-        });
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            // Main action buttons
+            document.getElementById('addVehicleBtn').addEventListener('click', () => openVehicleModal());
+            document.getElementById('addExpenseBtn').addEventListener('click', () => openExpenseModal());
+            document.getElementById('addLaborBtn').addEventListener('click', () => openLaborModal());
+            
+            // Modal cancel buttons
+            document.getElementById('cancelVehicle').addEventListener('click', () => vehicleModal.classList.add('hidden'));
+            document.getElementById('cancelExpense').addEventListener('click', () => expenseModal.classList.add('hidden'));
+            document.getElementById('cancelLabor').addEventListener('click', () => laborModal.classList.add('hidden'));
+            
+            // Hourly rate input
+            hourlyRateInput.addEventListener('change', renderDashboard);
+            hourlyRateInput.addEventListener('keyup', renderDashboard);
 
-        const tabs = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(item => item.classList.remove('active'));
-                tabContents.forEach(item => item.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.tab).classList.add('active');
+            // Confirmation modal buttons
+            document.getElementById('confirmCancel').addEventListener('click', () => {
+                confirmModal.classList.add('hidden');
+                confirmCallback = null;
             });
-        });
+            document.getElementById('confirmAction').addEventListener('click', () => {
+                if (confirmCallback) confirmCallback();
+                confirmModal.classList.add('hidden');
+                confirmCallback = null;
+            });
+
+            // Tab switching
+            const tabsContainer = document.querySelector('#tabs .border-b nav');
+            tabsContainer.addEventListener('click', (e) => {
+                const tabButton = e.target.closest('.tab-btn');
+                if (!tabButton) return;
+
+                document.querySelectorAll('.tab-btn').forEach(item => item.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(item => item.classList.remove('active'));
+                
+                tabButton.classList.add('active');
+                document.getElementById(tabButton.dataset.tab).classList.add('active');
+            });
+
+            // Form submissions
+            document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('vehicleId').value;
+                const data = {
+                    make: document.getElementById('vehicleMake').value.trim(),
+                    model: document.getElementById('vehicleModel').value.trim(),
+                    year: document.getElementById('vehicleYear').value,
+                    vin: document.getElementById('vehicleVin').value.trim(),
+                    purchaseDate: document.getElementById('vehiclePurchaseDate').value,
+                    purchasePrice: document.getElementById('vehiclePurchasePrice').value,
+                    saleDate: document.getElementById('vehicleSaleDate').value || null,
+                    salePrice: document.getElementById('vehicleSalePrice').value || null,
+                };
+                await saveData('vehicles', id, data);
+                vehicleModal.classList.add('hidden');
+            });
+
+            document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('expenseId').value;
+                const data = {
+                    vehicleId: document.getElementById('expenseVehicleId').value,
+                    date: document.getElementById('expenseDate').value,
+                    category: document.getElementById('expenseCategory').value.trim(),
+                    description: document.getElementById('expenseDescription').value.trim(),
+                    amount: document.getElementById('expenseAmount').value,
+                };
+                if (!data.vehicleId) { return; }
+                await saveData('expenses', id, data);
+                expenseModal.classList.add('hidden');
+            });
+            
+            document.getElementById('laborForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('laborId').value;
+                const data = {
+                    vehicleId: document.getElementById('laborVehicleId').value,
+                    date: document.getElementById('laborDate').value,
+                    hours: document.getElementById('laborHours').value,
+                    description: document.getElementById('laborDescription').value.trim(),
+                };
+                if (!data.vehicleId) { return; }
+                await saveData('labor', id, data);
+                laborModal.classList.add('hidden');
+            });
+
+            // Event delegation for dynamic table buttons
+            document.querySelector('.max-w-7xl').addEventListener('click', (e) => {
+                const target = e.target;
+                const id = target.dataset.id;
+                if (!id) return;
+
+                if (target.classList.contains('edit-vehicle-btn')) openVehicleModal(id);
+                if (target.classList.contains('delete-vehicle-btn')) deleteVehicle(id);
+                if (target.classList.contains('edit-expense-btn')) openExpenseModal(id);
+                if (target.classList.contains('delete-expense-btn')) deleteExpense(id);
+                if (target.classList.contains('edit-labor-btn')) openLaborModal(id);
+                if (target.classList.contains('delete-labor-btn')) deleteLabor(id);
+            });
+        }
 
         // --- Start App ---
         main();
+        setupEventListeners();
     </script>
 </body>
 </html>
