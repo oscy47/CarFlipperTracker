@@ -33,169 +33,199 @@
             transform: scale(1);
             pointer-events: auto;
         }
+        .hidden { display: none; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
-        <div class="loading-spinner animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-indigo-600"></div>
-        <p class="mt-4 text-gray-600">Connecting to database...</p>
-    </div>
-
-    <div class="max-w-7xl mx-auto">
-        <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+    <!-- START: Authentication UI -->
+    <div id="auth-container" class="fixed inset-0 bg-gray-100 z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Car Flip Financial Tracker</h1>
-                <p class="mt-2 text-gray-600">Your interactive dashboard for tracking vehicle flips.</p>
+                <h2 class="text-2xl font-bold text-center text-gray-800">Car Flip Financial Tracker</h2>
+                <p id="auth-error" class="text-center text-red-500 text-sm mt-2 h-5">&nbsp;</p>
             </div>
-            <div class="mt-4 sm:mt-0 flex items-center gap-4">
-                 <button id="addExpenseBtn" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                    Add Expense
-                </button>
-                 <button id="addLaborBtn" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-sky-700 transition-colors flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                    Add Labor
-                </button>
+            <form id="loginForm" class="space-y-4">
+                <input class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" type="email" id="email" placeholder="Email Address" required>
+                <input class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" type="password" id="password" placeholder="Password" required>
+                <button type="submit" id="loginBtn" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition-colors">Sign In</button>
+            </form>
+            <div class="text-center text-sm text-gray-600">
+                <p>
+                    <span id="auth-mode-text">Don't have an account?</span>
+                    <button id="toggleAuthModeBtn" class="font-semibold text-indigo-600 hover:underline">Sign Up</button>
+                </p>
             </div>
-        </header>
+        </div>
+    </div>
+    <!-- END: Authentication UI -->
 
-        <div id="tabs" class="bg-white rounded-lg shadow-md">
-            <!-- Tab Buttons -->
-            <div class="border-b border-gray-200">
-                <nav class="flex -mb-px px-4">
-                    <button class="tab-btn active p-4 font-medium" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>Dashboard</button>
-                    <button class="tab-btn p-4 font-medium" data-tab="vehicles"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16.5 17.5 13H22v-2h-4.5l-3.5-3.5"/><path d="M8 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><path d="M15 9h-1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1"/><path d="M5 11h1"/><path d="M5 15h1"/><circle cx="8.5" cy="11.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="14.5" r=".5" fill="currentColor"/></svg>Vehicle Log</button>
-                    <button class="tab-btn p-4 font-medium" data-tab="expenses"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h8"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M18 14h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3H14"/><path d="M20 12v10"/></svg>Expense Log</button>
-                    <button class="tab-btn p-4 font-medium" data-tab="labor"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Labor Log</button>
-                </nav>
-            </div>
+    <!-- START: Main Application Container -->
+    <div id="app-container" class="hidden">
+        <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+            <div class="loading-spinner animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-indigo-600"></div>
+            <p class="mt-4 text-gray-600">Loading your data...</p>
+        </div>
 
-            <!-- Dashboard Tab -->
-            <div id="dashboard" class="tab-content active p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-gray-100 p-6 rounded-lg"><h3 class="text-sm font-medium text-gray-500">Total Investment</h3><p class="text-3xl font-bold text-gray-800" id="totalInvestment">$0.00</p></div>
-                    <div class="bg-gray-100 p-6 rounded-lg"><h3 class="text-sm font-medium text-gray-500">Total Sales</h3><p class="text-3xl font-bold text-gray-800" id="totalSales">$0.00</p></div>
-                    <div class="total-profit-card p-6 rounded-lg col-span-1 md:col-span-2 lg:col-span-1"><h3 class="text-sm font-medium text-indigo-200">Total Net Profit</h3><p class="text-3xl font-bold" id="totalProfit">$0.00</p></div>
-                    <div class="bg-gray-100 p-6 rounded-lg flex flex-col justify-center">
-                        <label for="hourlyRate" class="text-sm font-medium text-gray-500">My Hourly Rate</label>
-                        <div class="flex items-center mt-1">
-                            <span class="text-2xl font-bold text-gray-500 mr-2">$</span>
-                            <input type="number" id="hourlyRate" class="text-2xl font-bold text-gray-800 bg-transparent w-full focus:outline-none" value="50">
-                        </div>
-                    </div>
+        <div class="max-w-7xl mx-auto">
+            <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Car Flip Financial Tracker</h1>
+                    <p class="mt-2 text-gray-600">Your interactive dashboard for tracking vehicle flips.</p>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Profit & Loss Summary</h2>
-                <div class="table-container"><table id="dashboardTable"><thead><tr><th>Vehicle</th><th>Purchase Price</th><th>Expenses</th><th>Labor Cost</th><th>Total Cost</th><th>Sale Price</th><th>Net Profit</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
-            </div>
-
-            <!-- Vehicle Log Tab -->
-            <div id="vehicles" class="tab-content p-6">
-                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-700">Vehicle Log</h2>
-                    <button id="addVehicleBtn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                <div class="mt-4 sm:mt-0 flex items-center gap-4">
+                    <button id="signOutBtn" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Sign Out
+                    </button>
+                    <button id="addExpenseBtn" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                        Add Vehicle
+                        Add Expense
+                    </button>
+                    <button id="addLaborBtn" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-sky-700 transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        Add Labor
                     </button>
                 </div>
-                <div class="table-container"><table id="vehicleTable"><thead><tr><th>Vehicle ID</th><th>Make</th><th>Model</th><th>Year</th><th>VIN</th><th>Purchase Date</th><th>Purchase Price</th><th>Sale Date</th><th>Sale Price</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
-            </div>
+            </header>
 
-            <!-- Expense Log Tab -->
-            <div id="expenses" class="tab-content p-6">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Expense Log</h2>
-                <div class="table-container"><table id="expenseTable"><thead><tr><th>Date</th><th>Vehicle</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
-            </div>
-            
-            <!-- Labor Log Tab -->
-            <div id="labor" class="tab-content p-6">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Labor Log</h2>
-                <div class="table-container"><table id="laborTable"><thead><tr><th>Date</th><th>Vehicle</th><th>Hours</th><th>Description</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
-            </div>
-        </div>
-    </div>
+            <div id="tabs" class="bg-white rounded-lg shadow-md">
+                <!-- Tab Buttons -->
+                <div class="border-b border-gray-200">
+                    <nav class="flex -mb-px px-4">
+                        <button class="tab-btn active p-4 font-medium" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>Dashboard</button>
+                        <button class="tab-btn p-4 font-medium" data-tab="vehicles"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16.5 17.5 13H22v-2h-4.5l-3.5-3.5"/><path d="M8 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><path d="M15 9h-1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1"/><path d="M5 11h1"/><path d="M5 15h1"/><circle cx="8.5" cy="11.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="14.5" r=".5" fill="currentColor"/></svg>Vehicle Log</button>
+                        <button class="tab-btn p-4 font-medium" data-tab="expenses"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h8"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M18 14h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3H14"/><path d="M20 12v10"/></svg>Expense Log</button>
+                        <button class="tab-btn p-4 font-medium" data-tab="labor"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Labor Log</button>
+                    </nav>
+                </div>
 
-    <!-- Add/Edit Vehicle Modal -->
-    <div id="vehicleModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
-        <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
-            <h2 id="vehicleModalTitle" class="text-2xl font-bold mb-6">Add New Vehicle</h2>
-            <form id="vehicleForm">
-                <input type="hidden" id="vehicleId">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input class="p-2 border rounded" type="text" id="vehicleMake" placeholder="Make (e.g., Honda)" required>
-                    <input class="p-2 border rounded" type="text" id="vehicleModel" placeholder="Model (e.g., Civic)" required>
-                    <input class="p-2 border rounded" type="number" id="vehicleYear" placeholder="Year (e.g., 2015)" required>
-                    <input class="p-2 border rounded" type="text" id="vehicleVin" placeholder="VIN">
-                    <input class="p-2 border rounded" type="date" id="vehiclePurchaseDate" required>
-                    <input class="p-2 border rounded" type="number" step="0.01" id="vehiclePurchasePrice" placeholder="Purchase Price" required>
-                    <input class="p-2 border rounded" type="date" id="vehicleSaleDate">
-                    <input class="p-2 border rounded" type="number" step="0.01" id="vehicleSalePrice" placeholder="Sale Price">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-gray-100 p-6 rounded-lg"><h3 class="text-sm font-medium text-gray-500">Total Investment</h3><p class="text-3xl font-bold text-gray-800" id="totalInvestment">$0.00</p></div>
+                        <div class="bg-gray-100 p-6 rounded-lg"><h3 class="text-sm font-medium text-gray-500">Total Sales</h3><p class="text-3xl font-bold text-gray-800" id="totalSales">$0.00</p></div>
+                        <div class="total-profit-card p-6 rounded-lg col-span-1 md:col-span-2 lg:col-span-1"><h3 class="text-sm font-medium text-indigo-200">Total Net Profit</h3><p class="text-3xl font-bold" id="totalProfit">$0.00</p></div>
+                        <div class="bg-gray-100 p-6 rounded-lg flex flex-col justify-center">
+                            <label for="hourlyRate" class="text-sm font-medium text-gray-500">My Hourly Rate</label>
+                            <div class="flex items-center mt-1">
+                                <span class="text-2xl font-bold text-gray-500 mr-2">$</span>
+                                <input type="number" id="hourlyRate" class="text-2xl font-bold text-gray-800 bg-transparent w-full focus:outline-none" value="50">
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Profit & Loss Summary</h2>
+                    <div class="table-container"><table id="dashboardTable"><thead><tr><th>Vehicle</th><th>Purchase Price</th><th>Expenses</th><th>Labor Cost</th><th>Total Cost</th><th>Sale Price</th><th>Net Profit</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
                 </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" id="cancelVehicle" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
-                    <button type="submit" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg">Save Vehicle</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Add/Edit Expense Modal -->
-    <div id="expenseModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
-        <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
-            <h2 id="expenseModalTitle" class="text-2xl font-bold mb-6">Add New Expense</h2>
-            <form id="expenseForm">
-                <input type="hidden" id="expenseId">
-                <div class="grid grid-cols-1 gap-4">
-                    <select id="expenseVehicleId" class="p-2 border rounded bg-white" required></select>
-                    <input class="p-2 border rounded" type="date" id="expenseDate" required>
-                    <input class="p-2 border rounded" type="text" id="expenseCategory" placeholder="Category (e.g., Parts, Repairs)" required>
-                    <input class="p-2 border rounded" type="text" id="expenseDescription" placeholder="Description (e.g., New tires)">
-                    <input class="p-2 border rounded" type="number" step="0.01" id="expenseAmount" placeholder="Amount" required>
+                <!-- Vehicle Log Tab -->
+                <div id="vehicles" class="tab-content p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-700">Vehicle Log</h2>
+                        <button id="addVehicleBtn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                            Add Vehicle
+                        </button>
+                    </div>
+                    <div class="table-container"><table id="vehicleTable"><thead><tr><th>Vehicle ID</th><th>Make</th><th>Model</th><th>Year</th><th>VIN</th><th>Purchase Date</th><th>Purchase Price</th><th>Sale Date</th><th>Sale Price</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
                 </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" id="cancelExpense" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
-                    <button type="submit" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg">Save Expense</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Add/Edit Labor Modal -->
-    <div id="laborModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
-        <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
-            <h2 id="laborModalTitle" class="text-2xl font-bold mb-6">Add Labor Entry</h2>
-            <form id="laborForm">
-                <input type="hidden" id="laborId">
-                <div class="grid grid-cols-1 gap-4">
-                    <select id="laborVehicleId" class="p-2 border rounded bg-white" required></select>
-                    <input class="p-2 border rounded" type="date" id="laborDate" required>
-                    <input class="p-2 border rounded" type="number" step="0.1" id="laborHours" placeholder="Hours Worked" required>
-                    <input class="p-2 border rounded" type="text" id="laborDescription" placeholder="Description (e.g., Replaced alternator)">
-                </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" id="cancelLabor" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
-                    <button type="submit" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg">Save Labor</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Confirmation Modal -->
-    <div id="confirmModal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="modal bg-white rounded-lg shadow-xl w-full max-w-sm p-6">
-            <h2 class="text-lg font-bold mb-4" id="confirmModalTitle">Are you sure?</h2>
-            <p id="confirmModalMessage" class="text-gray-600 mb-6">This action cannot be undone.</p>
-            <div class="flex justify-end">
-                <button id="confirmCancel" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
-                <button id="confirmAction" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg">Delete</button>
+                <!-- Expense Log Tab -->
+                <div id="expenses" class="tab-content p-6">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Expense Log</h2>
+                    <div class="table-container"><table id="expenseTable"><thead><tr><th>Date</th><th>Vehicle</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                </div>
+                
+                <!-- Labor Log Tab -->
+                <div id="labor" class="tab-content p-6">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Labor Log</h2>
+                    <div class="table-container"><table id="laborTable"><thead><tr><th>Date</th><th>Vehicle</th><th>Hours</th><th>Description</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                </div>
             </div>
         </div>
-    </div>
+
+        <!-- Add/Edit Vehicle Modal -->
+        <div id="vehicleModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
+            <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
+                <h2 id="vehicleModalTitle" class="text-2xl font-bold mb-6">Add New Vehicle</h2>
+                <form id="vehicleForm">
+                    <input type="hidden" id="vehicleId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input class="p-2 border rounded" type="text" id="vehicleMake" placeholder="Make (e.g., Honda)" required>
+                        <input class="p-2 border rounded" type="text" id="vehicleModel" placeholder="Model (e.g., Civic)" required>
+                        <input class="p-2 border rounded" type="number" id="vehicleYear" placeholder="Year (e.g., 2015)" required>
+                        <input class="p-2 border rounded" type="text" id="vehicleVin" placeholder="VIN">
+                        <input class="p-2 border rounded" type="date" id="vehiclePurchaseDate" required>
+                        <input class="p-2 border rounded" type="number" step="0.01" id="vehiclePurchasePrice" placeholder="Purchase Price" required>
+                        <input class="p-2 border rounded" type="date" id="vehicleSaleDate">
+                        <input class="p-2 border rounded" type="number" step="0.01" id="vehicleSalePrice" placeholder="Sale Price">
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button type="button" id="cancelVehicle" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                        <button type="submit" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg">Save Vehicle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add/Edit Expense Modal -->
+        <div id="expenseModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
+            <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
+                <h2 id="expenseModalTitle" class="text-2xl font-bold mb-6">Add New Expense</h2>
+                <form id="expenseForm">
+                    <input type="hidden" id="expenseId">
+                    <div class="grid grid-cols-1 gap-4">
+                        <select id="expenseVehicleId" class="p-2 border rounded bg-white" required></select>
+                        <input class="p-2 border rounded" type="date" id="expenseDate" required>
+                        <input class="p-2 border rounded" type="text" id="expenseCategory" placeholder="Category (e.g., Parts, Repairs)" required>
+                        <input class="p-2 border rounded" type="text" id="expenseDescription" placeholder="Description (e.g., New tires)">
+                        <input class="p-2 border rounded" type="number" step="0.01" id="expenseAmount" placeholder="Amount" required>
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button type="button" id="cancelExpense" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                        <button type="submit" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg">Save Expense</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Add/Edit Labor Modal -->
+        <div id="laborModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
+            <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
+                <h2 id="laborModalTitle" class="text-2xl font-bold mb-6">Add Labor Entry</h2>
+                <form id="laborForm">
+                    <input type="hidden" id="laborId">
+                    <div class="grid grid-cols-1 gap-4">
+                        <select id="laborVehicleId" class="p-2 border rounded bg-white" required></select>
+                        <input class="p-2 border rounded" type="date" id="laborDate" required>
+                        <input class="p-2 border rounded" type="number" step="0.1" id="laborHours" placeholder="Hours Worked" required>
+                        <input class="p-2 border rounded" type="text" id="laborDescription" placeholder="Description (e.g., Replaced alternator)">
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button type="button" id="cancelLabor" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                        <button type="submit" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg">Save Labor</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center hidden">
+            <div class="modal bg-white rounded-lg shadow-xl w-full max-w-sm p-6">
+                <h2 class="text-lg font-bold mb-4" id="confirmModalTitle">Are you sure?</h2>
+                <p id="confirmModalMessage" class="text-gray-600 mb-6">This action cannot be undone.</p>
+                <div class="flex justify-end">
+                    <button id="confirmCancel" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                    <button id="confirmAction" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- END: Main Application Container -->
 
     <script type="module">
-        // Firebase Imports
+        // Firebase Imports - UPDATED for email authentication
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- App State ---
@@ -207,6 +237,8 @@
         let confirmCallback = null;
 
         // --- UI Elements ---
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
         const loadingOverlay = document.getElementById('loading-overlay');
         const dashboardTableBody = document.querySelector('#dashboardTable tbody');
         const vehicleTableBody = document.querySelector('#vehicleTable tbody');
@@ -226,24 +258,23 @@
             // You can find this in your Firebase project settings.
             // =================================================================================
             const firebaseConfig = {
-              apiKey: "AIzaSyBDOAD40Eq9eo9N_XQMc5qG75wDfjYngvA", // Replace with your API Key
-              authDomain: "car-flip-tracker-47.firebaseapp.com", // Replace with your authDomain
-              projectId: "car-flip-tracker-47",                 // Replace with your projectId
-              storageBucket: "car-flip-tracker-47.firebasestorage.app", // Replace
-              messagingSenderId: "773148296619", // Replace
-              appId: "1:773148296619:web:0efc1fb4a231c1ea3cbeee", // Replace
-              measurementId: "G-CYJDE8ETB4"
+              apiKey: "YOUR_API_KEY",
+              authDomain: "YOUR_AUTH_DOMAIN",
+              projectId: "YOUR_PROJECT_ID",
+              storageBucket: "YOUR_STORAGE_BUCKET",
+              messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+              appId: "YOUR_APP_ID"
             };
-
-
             
-            const appId = 'car-flip-tracker-cf'; // A unique ID for this app instance
+            const appId = 'car-flip-tracker-cf';
 
             if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
-                loadingOverlay.innerHTML = `<div class="p-4 text-center">
+                 authContainer.innerHTML = `<div class="p-4 text-center">
                     <p class="font-bold text-red-600">Firebase configuration is missing or invalid.</p>
                     <p class="text-sm text-gray-600 mt-2">Please edit the 'firebaseConfig' object in the script in <code>index.html</code> with your own project credentials.</p>
                     </div>`;
+                authContainer.classList.remove('hidden');
+                loadingOverlay.classList.add('hidden');
                 return;
             }
 
@@ -252,26 +283,44 @@
             auth = getAuth(app);
 
             onAuthStateChanged(auth, user => {
-                if (user) {
+                if (user && !user.isAnonymous) {
+                    // User is properly logged in
                     userId = user.uid;
+                    authContainer.classList.add('hidden');
+                    appContainer.classList.remove('hidden');
+                    loadingOverlay.classList.remove('hidden');
+                    
                     setupDataListeners(appId);
-                    loadingOverlay.classList.add('hidden');
+                    
+                    // Give Firebase a moment to fetch initial data
+                    setTimeout(() => {
+                        loadingOverlay.classList.add('hidden');
+                    }, 1500);
+
                 } else {
-                    loadingOverlay.innerHTML = '<p>Authentication failed. Please refresh.</p>';
+                    // User is logged out
+                    userId = null;
+                    authContainer.classList.remove('hidden');
+                    appContainer.classList.add('hidden');
+                    loadingOverlay.classList.add('hidden');
+                    
+                    // Clean up any existing data listeners to prevent errors
+                    vehicleUnsubscribe();
+                    expenseUnsubscribe();
+                    laborUnsubscribe();
+                    // Clear local data arrays
+                    vehicles = [];
+                    expenses = [];
+                    laborEntries = [];
+                    renderAll(); // Re-render to clear tables
                 }
             });
-
-            try {
-                await signInAnonymously(auth);
-            } catch (error) {
-                console.error("Authentication Error:", error);
-                loadingOverlay.innerHTML = `<p class="text-red-500">Error connecting to database: ${error.message}</p><p class="text-sm mt-2">Check your Firebase security rules and ensure Anonymous sign-in is enabled.</p>`;
-            }
         }
         
         // --- Firestore Listeners ---
         function setupDataListeners(appId) {
             if (!userId) return;
+            // Unsubscribe from old listeners before creating new ones
             vehicleUnsubscribe();
             expenseUnsubscribe();
             laborUnsubscribe();
@@ -516,6 +565,10 @@
 
         // --- Data Persistence (CRUD) ---
         async function saveData(collectionName, id, data) {
+            if (!userId) {
+                console.error("Cannot save data, user is not logged in.");
+                return;
+            }
             const appId = 'car-flip-tracker-cf';
             const collectionRef = collection(db, 'artifacts', appId, 'users', userId, collectionName);
             try {
@@ -526,7 +579,6 @@
                 }
             } catch (error) {
                 console.error(`Error saving to ${collectionName}:`, error);
-                // Removed alert() to prevent blocking script execution
             }
         }
 
@@ -538,6 +590,7 @@
                 `Delete ${vehicle.year} ${vehicle.make}?`,
                 "This will also delete ALL associated expenses and labor. This action cannot be undone.",
                 async () => {
+                    if (!userId) return;
                     try {
                         const appId = 'car-flip-tracker-cf';
                         const batch = writeBatch(db);
@@ -565,6 +618,7 @@
                 `Delete ${itemName}?`,
                 `Are you sure you want to permanently delete this ${itemName}?`,
                 async () => {
+                    if (!userId) return;
                     try {
                         const appId = 'car-flip-tracker-cf';
                         await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, collectionName, id));
@@ -580,21 +634,60 @@
 
         // --- Event Listeners Setup ---
         function setupEventListeners() {
-            // Main action buttons
+            // --- Authentication Listeners ---
+            const loginForm = document.getElementById('loginForm');
+            const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
+            const loginBtn = document.getElementById('loginBtn');
+            const authError = document.getElementById('auth-error');
+            const authModeText = document.getElementById('auth-mode-text');
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const isRegistering = loginBtn.textContent === 'Sign Up';
+                authError.textContent = '\u00A0';
+
+                try {
+                    if (isRegistering) {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                    } else {
+                        await signInWithEmailAndPassword(auth, email, password);
+                    }
+                } catch (error) {
+                    authError.textContent = error.code.replace('auth/', '').replace(/-/g, ' ');
+                }
+            });
+
+            toggleAuthModeBtn.addEventListener('click', () => {
+                const isRegistering = loginBtn.textContent === 'Sign Up';
+                if (isRegistering) {
+                    loginBtn.textContent = 'Sign In';
+                    authModeText.textContent = "Don't have an account?";
+                    toggleAuthModeBtn.textContent = 'Sign Up';
+                } else {
+                    loginBtn.textContent = 'Sign Up';
+                    authModeText.textContent = "Already have an account?";
+                    toggleAuthModeBtn.textContent = 'Sign In';
+                }
+            });
+
+            document.getElementById('signOutBtn').addEventListener('click', async () => {
+                await signOut(auth);
+            });
+
+            // --- Main Application Listeners ---
             document.getElementById('addVehicleBtn').addEventListener('click', () => openVehicleModal());
             document.getElementById('addExpenseBtn').addEventListener('click', () => openExpenseModal());
             document.getElementById('addLaborBtn').addEventListener('click', () => openLaborModal());
             
-            // Modal cancel buttons
             document.getElementById('cancelVehicle').addEventListener('click', () => vehicleModal.classList.add('hidden'));
             document.getElementById('cancelExpense').addEventListener('click', () => expenseModal.classList.add('hidden'));
             document.getElementById('cancelLabor').addEventListener('click', () => laborModal.classList.add('hidden'));
             
-            // Hourly rate input
             hourlyRateInput.addEventListener('change', renderDashboard);
             hourlyRateInput.addEventListener('keyup', renderDashboard);
 
-            // Confirmation modal buttons
             document.getElementById('confirmCancel').addEventListener('click', () => {
                 confirmModal.classList.add('hidden');
                 confirmCallback = null;
@@ -605,7 +698,6 @@
                 confirmCallback = null;
             });
 
-            // Tab switching
             const tabsContainer = document.querySelector('#tabs .border-b nav');
             tabsContainer.addEventListener('click', (e) => {
                 const tabButton = e.target.closest('.tab-btn');
@@ -618,7 +710,6 @@
                 document.getElementById(tabButton.dataset.tab).classList.add('active');
             });
 
-            // Form submissions
             document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const id = document.getElementById('vehicleId').value;
@@ -665,8 +756,7 @@
                 laborModal.classList.add('hidden');
             });
 
-            // Event delegation for dynamic table buttons
-            document.querySelector('.max-w-7xl').addEventListener('click', (e) => {
+            document.querySelector('#app-container').addEventListener('click', (e) => {
                 const target = e.target;
                 const id = target.dataset.id;
                 if (!id) return;
