@@ -74,17 +74,17 @@
                     <p class="mt-2 text-gray-600">Your interactive dashboard for tracking vehicle flips.</p>
                 </div>
                 <div class="mt-4 sm:mt-0 flex items-center gap-4">
+                     <button id="loadDataBtn" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Load Data
+                    </button>
+                    <button id="saveDataBtn" class="bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-purple-700 transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Save Data
+                    </button>
                     <button id="signOutBtn" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                         Sign Out
-                    </button>
-                    <button id="addExpenseBtn" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                        Add Expense
-                    </button>
-                    <button id="addLaborBtn" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-sky-700 transition-colors flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                        Add Labor
                     </button>
                 </div>
             </header>
@@ -95,6 +95,7 @@
                     <nav class="flex -mb-px px-4">
                         <button class="tab-btn active p-4 font-medium" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>Dashboard</button>
                         <button class="tab-btn p-4 font-medium" data-tab="vehicles"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16.5 17.5 13H22v-2h-4.5l-3.5-3.5"/><path d="M8 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><path d="M15 9h-1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1"/><path d="M5 11h1"/><path d="M5 15h1"/><circle cx="8.5" cy="11.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="14.5" r=".5" fill="currentColor"/></svg>Vehicle Log</button>
+                        <button class="tab-btn p-4 font-medium" data-tab="plannedWork"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m10 14-2 2 2 2"/><path d="m14 18 2-2-2-2"/></svg>Planned Work</button>
                         <button class="tab-btn p-4 font-medium" data-tab="expenses"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h8"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M18 14h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3H14"/><path d="M20 12v10"/></svg>Expense Log</button>
                         <button class="tab-btn p-4 font-medium" data-tab="labor"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Labor Log</button>
                     </nav>
@@ -129,16 +130,40 @@
                     </div>
                     <div class="table-container"><table id="vehicleTable"><thead><tr><th>Vehicle ID</th><th>Make</th><th>Model</th><th>Year</th><th>VIN</th><th>Purchase Date</th><th>Purchase Price</th><th>Sale Date</th><th>Sale Price</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
                 </div>
+                
+                <!-- Planned Work Tab -->
+                <div id="plannedWork" class="tab-content p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-700">Planned Work & Parts</h2>
+                        <button id="addPlanBtn" class="bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-cyan-700 transition-colors flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                            Add Plan
+                        </button>
+                    </div>
+                    <div class="table-container"><table id="plannedWorkTable"><thead><tr><th>Vehicle</th><th>Type</th><th>Description</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                </div>
 
                 <!-- Expense Log Tab -->
                 <div id="expenses" class="tab-content p-6">
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Expense Log</h2>
+                     <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-700">Expense Log</h2>
+                        <button id="addExpenseBtn" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                            Add Expense
+                        </button>
+                    </div>
                     <div class="table-container"><table id="expenseTable"><thead><tr><th>Date</th><th>Vehicle</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
                 </div>
                 
                 <!-- Labor Log Tab -->
                 <div id="labor" class="tab-content p-6">
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Labor Log</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-700">Labor Log</h2>
+                        <button id="addLaborBtn" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-sky-700 transition-colors flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                            Add Labor
+                        </button>
+                    </div>
                     <div class="table-container"><table id="laborTable"><thead><tr><th>Date</th><th>Vehicle</th><th>Hours</th><th>Description</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
                 </div>
             </div>
@@ -161,8 +186,30 @@
                         <input class="p-2 border rounded" type="number" step="0.01" id="vehicleSalePrice" placeholder="Sale Price">
                     </div>
                     <div class="flex justify-end mt-6">
-                        <button type="button" id="cancelVehicle" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                        <button type="button" class="cancel-btn mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
                         <button type="submit" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg">Save Vehicle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Add/Edit Plan Modal -->
+        <div id="planModal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
+            <div class="modal bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
+                <h2 id="planModalTitle" class="text-2xl font-bold mb-6">Add Planned Work</h2>
+                <form id="planForm">
+                    <input type="hidden" id="planId">
+                    <div class="grid grid-cols-1 gap-4">
+                        <select id="planVehicleId" class="p-2 border rounded bg-white" required></select>
+                        <select id="planType" class="p-2 border rounded bg-white" required>
+                            <option value="Part">Part</option>
+                            <option value="Labor">Labor</option>
+                        </select>
+                        <input class="p-2 border rounded" type="text" id="planDescription" placeholder="Description (e.g., Replace spark plugs)" required>
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button type="button" class="cancel-btn mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                        <button type="submit" class="bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg">Save Plan</button>
                     </div>
                 </form>
             </div>
@@ -182,7 +229,7 @@
                         <input class="p-2 border rounded" type="number" step="0.01" id="expenseAmount" placeholder="Amount" required>
                     </div>
                     <div class="flex justify-end mt-6">
-                        <button type="button" id="cancelExpense" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                        <button type="button" class="cancel-btn mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
                         <button type="submit" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg">Save Expense</button>
                     </div>
                 </form>
@@ -202,7 +249,7 @@
                         <input class="p-2 border rounded" type="text" id="laborDescription" placeholder="Description (e.g., Replaced alternator)">
                     </div>
                     <div class="flex justify-end mt-6">
-                        <button type="button" id="cancelLabor" class="mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
+                        <button type="button" class="cancel-btn mr-4 py-2 px-4 rounded hover:bg-gray-100">Cancel</button>
                         <button type="submit" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg">Save Labor</button>
                     </div>
                 </form>
@@ -226,14 +273,14 @@
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, deleteDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- App State ---
         let db, auth, userId;
         let vehicles = [];
         let expenses = [];
         let laborEntries = [];
-        let vehicleUnsubscribe = () => {}, expenseUnsubscribe = () => {}, laborUnsubscribe = () => {};
+        let plannedWork = [];
         let confirmCallback = null;
 
         // --- UI Elements ---
@@ -244,19 +291,17 @@
         const vehicleTableBody = document.querySelector('#vehicleTable tbody');
         const expenseTableBody = document.querySelector('#expenseTable tbody');
         const laborTableBody = document.querySelector('#laborTable tbody');
+        const plannedWorkTableBody = document.querySelector('#plannedWorkTable tbody');
+        
         const vehicleModal = document.getElementById('vehicleModal');
         const expenseModal = document.getElementById('expenseModal');
         const laborModal = document.getElementById('laborModal');
+        const planModal = document.getElementById('planModal');
         const confirmModal = document.getElementById('confirmModal');
         const hourlyRateInput = document.getElementById('hourlyRate');
 
         // --- Initialization ---
         async function main() {
-            // =================================================================================
-            // IMPORTANT: FIREBASE CONFIGURATION
-            // You must replace this with your own Firebase project's configuration.
-            // You can find this in your Firebase project settings.
-            // =================================================================================
             const firebaseConfig = {
                 apiKey: "AIzaSyBDOAD40Eq9eo9N_XQMc5qG75wDfjYngvA",
                 authDomain: "car-flip-tracker-47.firebaseapp.com",
@@ -267,10 +312,10 @@
                 measurementId: "G-CYJDE8ETB4"
             };
             
-            if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
-                 authContainer.innerHTML = `<div class="p-4 text-center">
-                    <p class="font-bold text-red-600">Firebase configuration is missing or invalid.</p>
-                    <p class="text-sm text-gray-600 mt-2">Please edit the 'firebaseConfig' object in the script in <code>index.html</code> with your own project credentials.</p>
+            if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
+                 authContainer.innerHTML = `<div class="p-4 text-center bg-white rounded-lg shadow-md">
+                    <p class="font-bold text-red-600">Firebase configuration is missing.</p>
+                    <p class="text-sm text-gray-600 mt-2">Please replace the placeholder credentials in the script with your own Firebase project's configuration to enable data persistence.</p>
                     </div>`;
                 authContainer.classList.remove('hidden');
                 loadingOverlay.classList.add('hidden');
@@ -283,64 +328,61 @@
 
             onAuthStateChanged(auth, user => {
                 if (user && !user.isAnonymous) {
-                    // User is properly logged in
                     userId = user.uid;
                     authContainer.classList.add('hidden');
                     appContainer.classList.remove('hidden');
-                    loadingOverlay.classList.remove('hidden');
-                    
-                    setupDataListeners();
-                    
-                    // Give Firebase a moment to fetch initial data
-                    setTimeout(() => {
-                        loadingOverlay.classList.add('hidden');
-                    }, 1500);
-
+                    loadingOverlay.classList.add('hidden');
                 } else {
-                    // User is logged out
                     userId = null;
                     authContainer.classList.remove('hidden');
                     appContainer.classList.add('hidden');
                     loadingOverlay.classList.add('hidden');
-                    
-                    // Clean up any existing data listeners to prevent errors
-                    vehicleUnsubscribe();
-                    expenseUnsubscribe();
-                    laborUnsubscribe();
-                    // Clear local data arrays
                     vehicles = [];
                     expenses = [];
                     laborEntries = [];
-                    renderAll(); // Re-render to clear tables
+                    plannedWork = [];
+                    renderAll();
                 }
             });
         }
         
-        // --- Firestore Listeners ---
-        function setupDataListeners() {
+        // --- Data Loading and Saving ---
+        async function loadAllData() {
             if (!userId) return;
-            // Unsubscribe from old listeners before creating new ones
-            vehicleUnsubscribe();
-            expenseUnsubscribe();
-            laborUnsubscribe();
+            loadingOverlay.classList.remove('hidden');
+            const docRef = doc(db, 'users', userId);
+            const docSnap = await getDoc(docRef);
 
-            const vehiclesCollection = collection(db, 'users', userId, 'vehicles');
-            vehicleUnsubscribe = onSnapshot(query(vehiclesCollection), (snapshot) => {
-                vehicles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderAll();
-            }, err => console.error("Vehicle listener error:", err));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                vehicles = data.vehicles || [];
+                expenses = data.expenses || [];
+                laborEntries = data.laborEntries || [];
+                plannedWork = data.plannedWork || [];
+            } else {
+                // No data found, initialize with empty arrays
+                vehicles = [];
+                expenses = [];
+                laborEntries = [];
+                plannedWork = [];
+            }
+            renderAll();
+            loadingOverlay.classList.add('hidden');
+            alert('Data loaded successfully!');
+        }
 
-            const expensesCollection = collection(db, 'users', userId, 'expenses');
-            expenseUnsubscribe = onSnapshot(query(expensesCollection), (snapshot) => {
-                expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderAll();
-            }, err => console.error("Expense listener error:", err));
-            
-            const laborCollection = collection(db, 'users', userId, 'labor');
-            laborUnsubscribe = onSnapshot(query(laborCollection), (snapshot) => {
-                laborEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderAll();
-            }, err => console.error("Labor listener error:", err));
+        async function saveAllData() {
+            if (!userId) return;
+            loadingOverlay.classList.remove('hidden');
+            const dataToSave = {
+                vehicles,
+                expenses,
+                laborEntries,
+                plannedWork
+            };
+            await setDoc(doc(db, 'users', userId), dataToSave);
+            loadingOverlay.classList.add('hidden');
+            alert('Data saved successfully!');
         }
 
         // --- Rendering Logic ---
@@ -350,6 +392,7 @@
             renderVehicleTable();
             renderExpenseTable();
             renderLaborTable();
+            renderPlannedWorkTable();
             updateVehicleDropdowns();
         }
 
@@ -435,6 +478,26 @@
                 vehicleTableBody.insertAdjacentHTML('beforeend', row);
             });
         }
+        
+        function renderPlannedWorkTable() {
+            plannedWorkTableBody.innerHTML = '';
+            plannedWork.forEach(p => {
+                const vehicle = vehicles.find(v => v.id === p.vehicleId);
+                const vehicleName = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'Unknown Vehicle';
+                const row = `
+                    <tr>
+                        <td>${vehicleName} <span class="font-mono text-xs">(${p.vehicleId.substring(0,6)})</span></td>
+                        <td><span class="px-2 py-1 text-xs font-semibold ${p.type === 'Part' ? 'text-orange-800 bg-orange-100' : 'text-indigo-800 bg-indigo-100'} rounded-full">${p.type}</span></td>
+                        <td>${p.description}</td>
+                        <td class="flex items-center gap-2">
+                            <button class="complete-plan-btn text-sm text-green-600 hover:underline" data-id="${p.id}">Complete</button>
+                            <button class="delete-plan-btn text-sm text-red-600 hover:underline" data-id="${p.id}">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                plannedWorkTableBody.insertAdjacentHTML('beforeend', row);
+            });
+        }
 
         function renderExpenseTable() {
             expenseTableBody.innerHTML = '';
@@ -502,6 +565,24 @@
             }
             vehicleModal.classList.remove('hidden');
         }
+        
+        function openPlanModal(id = null) {
+            const form = document.getElementById('planForm');
+            form.reset();
+            document.getElementById('planId').value = '';
+            if (id) {
+                const plan = plannedWork.find(p => p.id === id);
+                if(!plan) return;
+                document.getElementById('planModalTitle').textContent = 'Edit Plan';
+                document.getElementById('planId').value = plan.id;
+                document.getElementById('planVehicleId').value = plan.vehicleId;
+                document.getElementById('planType').value = plan.type;
+                document.getElementById('planDescription').value = plan.description;
+            } else {
+                document.getElementById('planModalTitle').textContent = 'Add New Plan';
+            }
+            planModal.classList.remove('hidden');
+        }
 
         function openExpenseModal(id = null) {
             const form = document.getElementById('expenseForm');
@@ -543,7 +624,7 @@
         }
 
         function updateVehicleDropdowns() {
-            const selects = [document.getElementById('expenseVehicleId'), document.getElementById('laborVehicleId')];
+            const selects = [document.getElementById('expenseVehicleId'), document.getElementById('laborVehicleId'), document.getElementById('planVehicleId')];
             selects.forEach(select => {
                 if (!select) return;
                 const currentVal = select.value;
@@ -561,80 +642,14 @@
             confirmCallback = onConfirm;
             confirmModal.classList.remove('hidden');
         }
-
-        // --- Data Persistence (CRUD) ---
-        async function saveData(collectionName, id, data) {
-            if (!userId) {
-                console.error("Cannot save data, user is not logged in.");
-                return;
-            }
-            const collectionRef = collection(db, 'users', userId, collectionName);
-            try {
-                if (id) {
-                    await setDoc(doc(collectionRef, id), data);
-                } else {
-                    await addDoc(collectionRef, data);
-                }
-            } catch (error) {
-                console.error(`Error saving to ${collectionName}:`, error);
-            }
-        }
-
-        async function deleteVehicle(id) {
-            const vehicle = vehicles.find(v => v.id === id);
-            if (!vehicle) return;
-            
-            showConfirmModal(
-                `Delete ${vehicle.year} ${vehicle.make}?`,
-                "This will also delete ALL associated expenses and labor. This action cannot be undone.",
-                async () => {
-                    if (!userId) return;
-                    try {
-                        const batch = writeBatch(db);
-                        
-                        // Query for expenses associated with the vehicle
-                        const expensesQuery = query(collection(db, 'users', userId, 'expenses'), where("vehicleId", "==", id));
-                        const expenseDocs = await getDocs(expensesQuery);
-                        expenseDocs.forEach(doc => batch.delete(doc.ref));
-
-                        // Query for labor associated with the vehicle
-                        const laborQuery = query(collection(db, 'users', userId, 'labor'), where("vehicleId", "==", id));
-                        const laborDocs = await getDocs(laborQuery);
-                        laborDocs.forEach(doc => batch.delete(doc.ref));
-                        
-                        // Delete the vehicle document itself
-                        const vehicleRef = doc(db, 'users', userId, 'vehicles', id);
-                        batch.delete(vehicleRef);
-
-                        await batch.commit();
-                    } catch (error) {
-                        console.error("Error deleting vehicle and its data:", error);
-                    }
-                }
-            );
-        }
-
-        async function deleteItem(collectionName, id, itemName) {
-             showConfirmModal(
-                `Delete ${itemName}?`,
-                `Are you sure you want to permanently delete this ${itemName}?`,
-                async () => {
-                    if (!userId) return;
-                    try {
-                        await deleteDoc(doc(db, 'users', userId, collectionName, id));
-                    } catch (error) { 
-                        console.error(`Error deleting ${itemName}:`, error); 
-                    }
-                }
-            );
-        }
         
-        const deleteExpense = (id) => deleteItem('expenses', id, 'expense');
-        const deleteLabor = (id) => deleteItem('labor', id, 'labor entry');
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
 
         // --- Event Listeners Setup ---
         function setupEventListeners() {
-            // --- Authentication Listeners ---
+            // --- Auth ---
             const loginForm = document.getElementById('loginForm');
             const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
             const loginBtn = document.getElementById('loginBtn');
@@ -661,33 +676,35 @@
 
             toggleAuthModeBtn.addEventListener('click', () => {
                 const isRegistering = loginBtn.textContent === 'Sign Up';
-                if (isRegistering) {
-                    loginBtn.textContent = 'Sign In';
-                    authModeText.textContent = "Don't have an account?";
-                    toggleAuthModeBtn.textContent = 'Sign Up';
-                } else {
-                    loginBtn.textContent = 'Sign Up';
-                    authModeText.textContent = "Already have an account?";
-                    toggleAuthModeBtn.textContent = 'Sign In';
-                }
+                loginBtn.textContent = isRegistering ? 'Sign In' : 'Sign Up';
+                authModeText.textContent = isRegistering ? "Don't have an account?" : "Already have an account?";
+                toggleAuthModeBtn.textContent = isRegistering ? 'Sign Up' : 'Sign In';
             });
 
-            document.getElementById('signOutBtn').addEventListener('click', async () => {
-                await signOut(auth);
-            });
+            document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
+            document.getElementById('loadDataBtn').addEventListener('click', loadAllData);
+            document.getElementById('saveDataBtn').addEventListener('click', saveAllData);
 
-            // --- Main Application Listeners ---
+            // --- Main App Buttons ---
             document.getElementById('addVehicleBtn').addEventListener('click', () => openVehicleModal());
             document.getElementById('addExpenseBtn').addEventListener('click', () => openExpenseModal());
             document.getElementById('addLaborBtn').addEventListener('click', () => openLaborModal());
+            document.getElementById('addPlanBtn').addEventListener('click', () => openPlanModal());
             
-            document.getElementById('cancelVehicle').addEventListener('click', () => vehicleModal.classList.add('hidden'));
-            document.getElementById('cancelExpense').addEventListener('click', () => expenseModal.classList.add('hidden'));
-            document.getElementById('cancelLabor').addEventListener('click', () => laborModal.classList.add('hidden'));
+            // --- Modal Cancel Buttons ---
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    vehicleModal.classList.add('hidden');
+                    expenseModal.classList.add('hidden');
+                    laborModal.classList.add('hidden');
+                    planModal.classList.add('hidden');
+                });
+            });
             
             hourlyRateInput.addEventListener('change', renderDashboard);
             hourlyRateInput.addEventListener('keyup', renderDashboard);
 
+            // --- Confirmation Modal ---
             document.getElementById('confirmCancel').addEventListener('click', () => {
                 confirmModal.classList.add('hidden');
                 confirmCallback = null;
@@ -698,22 +715,23 @@
                 confirmCallback = null;
             });
 
-            const tabsContainer = document.querySelector('#tabs .border-b nav');
-            tabsContainer.addEventListener('click', (e) => {
+            // --- Tabs ---
+            document.querySelector('#tabs .border-b nav').addEventListener('click', (e) => {
                 const tabButton = e.target.closest('.tab-btn');
                 if (!tabButton) return;
-
                 document.querySelectorAll('.tab-btn').forEach(item => item.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(item => item.classList.remove('active'));
-                
                 tabButton.classList.add('active');
                 document.getElementById(tabButton.dataset.tab).classList.add('active');
             });
 
-            document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
+            // --- Forms ---
+            document.getElementById('vehicleForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const id = document.getElementById('vehicleId').value;
+                const id = document.getElementById('vehicleId').value || generateId();
+                const existingIndex = vehicles.findIndex(v => v.id === id);
                 const data = {
+                    id: id,
                     make: document.getElementById('vehicleMake').value.trim(),
                     model: document.getElementById('vehicleModel').value.trim(),
                     year: document.getElementById('vehicleYear').value,
@@ -723,50 +741,141 @@
                     saleDate: document.getElementById('vehicleSaleDate').value || null,
                     salePrice: document.getElementById('vehicleSalePrice').value || null,
                 };
-                await saveData('vehicles', id, data);
+                if (existingIndex > -1) {
+                    vehicles[existingIndex] = data;
+                } else {
+                    vehicles.push(data);
+                }
+                renderAll();
                 vehicleModal.classList.add('hidden');
             });
 
-            document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+            document.getElementById('planForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const id = document.getElementById('expenseId').value;
+                const id = document.getElementById('planId').value || generateId();
+                const existingIndex = plannedWork.findIndex(p => p.id === id);
                 const data = {
+                    id: id,
+                    vehicleId: document.getElementById('planVehicleId').value,
+                    type: document.getElementById('planType').value,
+                    description: document.getElementById('planDescription').value.trim(),
+                };
+                if (!data.vehicleId) { alert("Please select a vehicle."); return; }
+                
+                if(existingIndex > -1) {
+                    plannedWork[existingIndex] = data;
+                } else {
+                    plannedWork.push(data);
+                }
+                renderAll();
+                planModal.classList.add('hidden');
+            });
+
+            document.getElementById('expenseForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('expenseId').value || generateId();
+                const existingIndex = expenses.findIndex(ex => ex.id === id);
+                const data = {
+                    id: id,
                     vehicleId: document.getElementById('expenseVehicleId').value,
                     date: document.getElementById('expenseDate').value,
                     category: document.getElementById('expenseCategory').value.trim(),
                     description: document.getElementById('expenseDescription').value.trim(),
                     amount: document.getElementById('expenseAmount').value,
                 };
-                if (!data.vehicleId) { return; }
-                await saveData('expenses', id, data);
+                if (!data.vehicleId) { alert("Please select a vehicle."); return; }
+
+                if(existingIndex > -1) {
+                    expenses[existingIndex] = data;
+                } else {
+                    expenses.push(data);
+                }
+                renderAll();
                 expenseModal.classList.add('hidden');
             });
             
-            document.getElementById('laborForm').addEventListener('submit', async (e) => {
+            document.getElementById('laborForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const id = document.getElementById('laborId').value;
+                const id = document.getElementById('laborId').value || generateId();
+                const existingIndex = laborEntries.findIndex(l => l.id === id);
                 const data = {
+                    id: id,
                     vehicleId: document.getElementById('laborVehicleId').value,
                     date: document.getElementById('laborDate').value,
                     hours: document.getElementById('laborHours').value,
                     description: document.getElementById('laborDescription').value.trim(),
                 };
-                if (!data.vehicleId) { return; }
-                await saveData('labor', id, data);
+                if (!data.vehicleId) { alert("Please select a vehicle."); return; }
+
+                if(existingIndex > -1) {
+                    laborEntries[existingIndex] = data;
+                } else {
+                    laborEntries.push(data);
+                }
+                renderAll();
                 laborModal.classList.add('hidden');
             });
 
+            // --- Table Action Buttons ---
             document.querySelector('#app-container').addEventListener('click', (e) => {
                 const target = e.target;
                 const id = target.dataset.id;
                 if (!id) return;
 
                 if (target.classList.contains('edit-vehicle-btn')) openVehicleModal(id);
-                if (target.classList.contains('delete-vehicle-btn')) deleteVehicle(id);
+                if (target.classList.contains('delete-vehicle-btn')) {
+                    showConfirmModal('Delete Vehicle?', 'This will also delete ALL associated items (expenses, labor, plans). This cannot be undone.', () => {
+                        vehicles = vehicles.filter(v => v.id !== id);
+                        expenses = expenses.filter(ex => ex.vehicleId !== id);
+                        laborEntries = laborEntries.filter(l => l.vehicleId !== id);
+                        plannedWork = plannedWork.filter(p => p.vehicleId !== id);
+                        renderAll();
+                    });
+                }
+                
+                if (target.classList.contains('complete-plan-btn')) {
+                    const plan = plannedWork.find(p => p.id === id);
+                    if (!plan) return;
+                    const today = new Date().toISOString().split('T')[0];
+                    if (plan.type === 'Part') {
+                        const price = prompt(`Enter the price for "${plan.description}":`);
+                        if (price !== null && !isNaN(price) && price.trim() !== '') {
+                            expenses.push({ id: generateId(), vehicleId: plan.vehicleId, date: today, category: 'Parts', description: plan.description, amount: parseFloat(price) });
+                            plannedWork = plannedWork.filter(p => p.id !== id);
+                            renderAll();
+                        }
+                    } else { // Labor
+                        const hours = prompt(`Enter the hours worked for "${plan.description}":`);
+                        if (hours !== null && !isNaN(hours) && hours.trim() !== '') {
+                            laborEntries.push({ id: generateId(), vehicleId: plan.vehicleId, date: today, hours: parseFloat(hours), description: plan.description });
+                            plannedWork = plannedWork.filter(p => p.id !== id);
+                            renderAll();
+                        }
+                    }
+                }
+                
+                if (target.classList.contains('delete-plan-btn')) {
+                    showConfirmModal('Delete Plan?', 'Are you sure you want to delete this planned item?', () => {
+                        plannedWork = plannedWork.filter(p => p.id !== id);
+                        renderAll();
+                    });
+                }
+
                 if (target.classList.contains('edit-expense-btn')) openExpenseModal(id);
-                if (target.classList.contains('delete-expense-btn')) deleteExpense(id);
+                if (target.classList.contains('delete-expense-btn')) {
+                    showConfirmModal('Delete Expense?', 'Are you sure you want to delete this expense?', () => {
+                        expenses = expenses.filter(ex => ex.id !== id);
+                        renderAll();
+                    });
+                }
+
                 if (target.classList.contains('edit-labor-btn')) openLaborModal(id);
-                if (target.classList.contains('delete-labor-btn')) deleteLabor(id);
+                if (target.classList.contains('delete-labor-btn')) {
+                    showConfirmModal('Delete Labor Entry?', 'Are you sure you want to delete this labor entry?', () => {
+                        laborEntries = laborEntries.filter(l => l.id !== id);
+                        renderAll();
+                    });
+                }
             });
         }
 
