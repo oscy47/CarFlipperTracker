@@ -23,20 +23,29 @@
         .modal-backdrop { background-color: rgba(0,0,0,0.5); }
         .modal { transition: opacity 0.3s ease, transform 0.3s ease; }
         .loading-spinner { border-top-color: #4f46e5; }
-        .modal.hidden, .modal-backdrop.hidden {
+        .modal.hidden, .modal-backdrop.hidden, #notification.hidden {
             opacity: 0;
             transform: scale(0.95);
             pointer-events: none;
         }
-        .modal, .modal-backdrop {
+        .modal, .modal-backdrop, #notification {
             opacity: 1;
             transform: scale(1);
             pointer-events: auto;
+        }
+        #notification {
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
         .hidden { display: none; }
     </style>
 </head>
 <body class="p-4 md:p-8">
+
+    <!-- START: Notification -->
+    <div id="notification" class="hidden fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-md">
+        <p id="notification-message"></p>
+    </div>
+    <!-- END: Notification -->
 
     <!-- START: Authentication UI -->
     <div id="auth-container" class="fixed inset-0 bg-gray-100 z-50 flex items-center justify-center p-4">
@@ -62,9 +71,9 @@
 
     <!-- START: Main Application Container -->
     <div id="app-container" class="hidden">
-        <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+        <div id="loading-overlay" class="hidden fixed inset-0 bg-white bg-opacity-75 z-50 flex flex-col items-center justify-center">
             <div class="loading-spinner animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-indigo-600"></div>
-            <p class="mt-4 text-gray-600">Loading your data...</p>
+            <p class="mt-4 text-gray-600">Processing...</p>
         </div>
 
         <div class="max-w-7xl mx-auto">
@@ -92,7 +101,7 @@
             <div id="tabs" class="bg-white rounded-lg shadow-md">
                 <!-- Tab Buttons -->
                 <div class="border-b border-gray-200">
-                    <nav class="flex -mb-px px-4">
+                    <nav class="flex -mb-px px-4 overflow-x-auto">
                         <button class="tab-btn active p-4 font-medium" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>Dashboard</button>
                         <button class="tab-btn p-4 font-medium" data-tab="vehicles"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16.5 17.5 13H22v-2h-4.5l-3.5-3.5"/><path d="M8 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><path d="M15 9h-1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1"/><path d="M5 11h1"/><path d="M5 15h1"/><circle cx="8.5" cy="11.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="14.5" r=".5" fill="currentColor"/></svg>Vehicle Log</button>
                         <button class="tab-btn p-4 font-medium" data-tab="plannedWork"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m10 14-2 2 2 2"/><path d="m14 18 2-2-2-2"/></svg>Planned Work</button>
@@ -273,7 +282,7 @@
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, setDoc, deleteDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- App State ---
         let db, auth, userId;
@@ -287,6 +296,8 @@
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
         const loadingOverlay = document.getElementById('loading-overlay');
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notification-message');
         const dashboardTableBody = document.querySelector('#dashboardTable tbody');
         const vehicleTableBody = document.querySelector('#vehicleTable tbody');
         const expenseTableBody = document.querySelector('#expenseTable tbody');
@@ -331,12 +342,16 @@
                     userId = user.uid;
                     authContainer.classList.add('hidden');
                     appContainer.classList.remove('hidden');
-                    loadingOverlay.classList.add('hidden');
+                    // Clear data on login, prompt user to load
+                    vehicles = [];
+                    expenses = [];
+                    laborEntries = [];
+                    plannedWork = [];
+                    renderAll();
                 } else {
                     userId = null;
                     authContainer.classList.remove('hidden');
                     appContainer.classList.add('hidden');
-                    loadingOverlay.classList.add('hidden');
                     vehicles = [];
                     expenses = [];
                     laborEntries = [];
@@ -346,29 +361,43 @@
             });
         }
         
+        // --- Notifications ---
+        function showNotification(message, isError = false) {
+            notificationMessage.textContent = message;
+            notification.classList.toggle('bg-red-500', isError);
+            notification.classList.toggle('bg-green-500', !isError);
+            notification.classList.remove('hidden');
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
         // --- Data Loading and Saving ---
         async function loadAllData() {
             if (!userId) return;
             loadingOverlay.classList.remove('hidden');
-            const docRef = doc(db, 'users', userId);
-            const docSnap = await getDoc(docRef);
+            try {
+                const docRef = doc(db, 'users', userId);
+                const docSnap = await getDoc(docRef);
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                vehicles = data.vehicles || [];
-                expenses = data.expenses || [];
-                laborEntries = data.laborEntries || [];
-                plannedWork = data.plannedWork || [];
-            } else {
-                // No data found, initialize with empty arrays
-                vehicles = [];
-                expenses = [];
-                laborEntries = [];
-                plannedWork = [];
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    vehicles = data.vehicles || [];
+                    expenses = data.expenses || [];
+                    laborEntries = data.laborEntries || [];
+                    plannedWork = data.plannedWork || [];
+                    showNotification('Data loaded successfully!');
+                } else {
+                    vehicles = []; expenses = []; laborEntries = []; plannedWork = [];
+                    showNotification('No saved data found. Starting fresh!');
+                }
+                renderAll();
+            } catch (error) {
+                console.error("Error loading data: ", error);
+                showNotification('Error loading data.', true);
+            } finally {
+                loadingOverlay.classList.add('hidden');
             }
-            renderAll();
-            loadingOverlay.classList.add('hidden');
-            alert('Data loaded successfully!');
         }
 
         async function saveAllData() {
@@ -380,9 +409,15 @@
                 laborEntries,
                 plannedWork
             };
-            await setDoc(doc(db, 'users', userId), dataToSave);
-            loadingOverlay.classList.add('hidden');
-            alert('Data saved successfully!');
+            try {
+                await setDoc(doc(db, 'users', userId), dataToSave);
+                showNotification('Data saved successfully!');
+            } catch (error) {
+                console.error("Error saving data: ", error);
+                showNotification('Error saving data.', true);
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
         }
 
         // --- Rendering Logic ---
@@ -693,11 +728,8 @@
             
             // --- Modal Cancel Buttons ---
             document.querySelectorAll('.cancel-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    vehicleModal.classList.add('hidden');
-                    expenseModal.classList.add('hidden');
-                    laborModal.classList.add('hidden');
-                    planModal.classList.add('hidden');
+                btn.addEventListener('click', (e) => {
+                    e.target.closest('.modal-backdrop').classList.add('hidden');
                 });
             });
             
@@ -760,7 +792,7 @@
                     type: document.getElementById('planType').value,
                     description: document.getElementById('planDescription').value.trim(),
                 };
-                if (!data.vehicleId) { alert("Please select a vehicle."); return; }
+                if (!data.vehicleId) { showNotification("Please select a vehicle.", true); return; }
                 
                 if(existingIndex > -1) {
                     plannedWork[existingIndex] = data;
@@ -783,7 +815,7 @@
                     description: document.getElementById('expenseDescription').value.trim(),
                     amount: document.getElementById('expenseAmount').value,
                 };
-                if (!data.vehicleId) { alert("Please select a vehicle."); return; }
+                if (!data.vehicleId) { showNotification("Please select a vehicle.", true); return; }
 
                 if(existingIndex > -1) {
                     expenses[existingIndex] = data;
@@ -805,7 +837,7 @@
                     hours: document.getElementById('laborHours').value,
                     description: document.getElementById('laborDescription').value.trim(),
                 };
-                if (!data.vehicleId) { alert("Please select a vehicle."); return; }
+                if (!data.vehicleId) { showNotification("Please select a vehicle.", true); return; }
 
                 if(existingIndex > -1) {
                     laborEntries[existingIndex] = data;
