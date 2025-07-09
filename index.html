@@ -223,7 +223,7 @@
     </div> <!-- END: Main Application Container -->
 
     <script type="module">
-        // Firebase Imports - UPDATED for email authentication
+        // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -267,8 +267,6 @@
                 measurementId: "G-CYJDE8ETB4"
             };
             
-            const appId = 'car-flip-tracker-cf';
-
             if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
                  authContainer.innerHTML = `<div class="p-4 text-center">
                     <p class="font-bold text-red-600">Firebase configuration is missing or invalid.</p>
@@ -291,7 +289,7 @@
                     appContainer.classList.remove('hidden');
                     loadingOverlay.classList.remove('hidden');
                     
-                    setupDataListeners(appId);
+                    setupDataListeners();
                     
                     // Give Firebase a moment to fetch initial data
                     setTimeout(() => {
@@ -319,26 +317,26 @@
         }
         
         // --- Firestore Listeners ---
-        function setupDataListeners(appId) {
+        function setupDataListeners() {
             if (!userId) return;
             // Unsubscribe from old listeners before creating new ones
             vehicleUnsubscribe();
             expenseUnsubscribe();
             laborUnsubscribe();
 
-            const vehiclesCollection = collection(db, 'artifacts', appId, 'users', userId, 'vehicles');
+            const vehiclesCollection = collection(db, 'users', userId, 'vehicles');
             vehicleUnsubscribe = onSnapshot(query(vehiclesCollection), (snapshot) => {
                 vehicles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderAll();
             }, err => console.error("Vehicle listener error:", err));
 
-            const expensesCollection = collection(db, 'artifacts', appId, 'users', userId, 'expenses');
+            const expensesCollection = collection(db, 'users', userId, 'expenses');
             expenseUnsubscribe = onSnapshot(query(expensesCollection), (snapshot) => {
                 expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderAll();
             }, err => console.error("Expense listener error:", err));
             
-            const laborCollection = collection(db, 'artifacts', appId, 'users', userId, 'labor');
+            const laborCollection = collection(db, 'users', userId, 'labor');
             laborUnsubscribe = onSnapshot(query(laborCollection), (snapshot) => {
                 laborEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderAll();
@@ -570,8 +568,7 @@
                 console.error("Cannot save data, user is not logged in.");
                 return;
             }
-            const appId = 'car-flip-tracker-cf';
-            const collectionRef = collection(db, 'artifacts', appId, 'users', userId, collectionName);
+            const collectionRef = collection(db, 'users', userId, collectionName);
             try {
                 if (id) {
                     await setDoc(doc(collectionRef, id), data);
@@ -593,17 +590,20 @@
                 async () => {
                     if (!userId) return;
                     try {
-                        const appId = 'car-flip-tracker-cf';
                         const batch = writeBatch(db);
                         
-                        const collectionsToDelete = ['expenses', 'labor'];
-                        for (const coll of collectionsToDelete) {
-                            const q = query(collection(db, 'artifacts', appId, 'users', userId, coll), where("vehicleId", "==", id));
-                            const docs = await getDocs(q);
-                            docs.forEach(doc => batch.delete(doc.ref));
-                        }
+                        // Query for expenses associated with the vehicle
+                        const expensesQuery = query(collection(db, 'users', userId, 'expenses'), where("vehicleId", "==", id));
+                        const expenseDocs = await getDocs(expensesQuery);
+                        expenseDocs.forEach(doc => batch.delete(doc.ref));
+
+                        // Query for labor associated with the vehicle
+                        const laborQuery = query(collection(db, 'users', userId, 'labor'), where("vehicleId", "==", id));
+                        const laborDocs = await getDocs(laborQuery);
+                        laborDocs.forEach(doc => batch.delete(doc.ref));
                         
-                        const vehicleRef = doc(db, 'artifacts', appId, 'users', userId, 'vehicles', id);
+                        // Delete the vehicle document itself
+                        const vehicleRef = doc(db, 'users', userId, 'vehicles', id);
                         batch.delete(vehicleRef);
 
                         await batch.commit();
@@ -621,8 +621,7 @@
                 async () => {
                     if (!userId) return;
                     try {
-                        const appId = 'car-flip-tracker-cf';
-                        await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, collectionName, id));
+                        await deleteDoc(doc(db, 'users', userId, collectionName, id));
                     } catch (error) { 
                         console.error(`Error deleting ${itemName}:`, error); 
                     }
@@ -774,10 +773,6 @@
         // --- Start App ---
         main();
         setupEventListeners();
-        setTimeout(() => {
-    loadingOverlay.classList.add('hidden');
-    renderAll(); // Ensure fresh UI on login
-}, 1500);
     </script>
 </body>
 </html>
