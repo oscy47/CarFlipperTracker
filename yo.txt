@@ -1,0 +1,9 @@
+const firebaseConfig = {
+                apiKey: "AIzaSyBDOAD40Eq9eo9N_XQMc5qG75wDfjYngvA",
+                authDomain: "car-flip-tracker-47.firebaseapp.com",
+                projectId: "car-flip-tracker-47",
+                storageBucket: "car-flip-tracker-47.firebasestorage.app",
+                messagingSenderId: "773148296619",
+                appId: "1:773148296619:web:0efc1fb4a231c1ea3cbeee",
+                measurementId: "G-CYJDE8ETB4"
+            };

@@ -23,12 +23,12 @@
         .modal-backdrop { background-color: rgba(0,0,0,0.5); }
         .modal { transition: opacity 0.3s ease, transform 0.3s ease; }
         .loading-spinner { border-top-color: #4f46e5; }
-        .modal.hidden, .modal-backdrop.hidden, #notification.hidden, #loading-overlay.hidden {
+        .modal.hidden, .modal-backdrop.hidden, #notification.hidden {
             opacity: 0;
             transform: scale(0.95);
             pointer-events: none;
         }
-        .modal, .modal-backdrop, #notification, #loading-overlay {
+        .modal, .modal-backdrop, #notification {
             opacity: 1;
             transform: scale(1);
             pointer-events: auto;
@@ -42,32 +42,58 @@
 <body class="p-4 md:p-8">
 
     <!-- START: Notification -->
-    <div id="notification" class="hidden fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-md z-50">
+    <div id="notification" class="hidden fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-md">
         <p id="notification-message"></p>
     </div>
     <!-- END: Notification -->
 
+    <!-- START: Authentication UI -->
+    <div id="auth-container" class="fixed inset-0 bg-gray-100 z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+            <div>
+                <h2 class="text-2xl font-bold text-center text-gray-800">Car Flip Financial Tracker</h2>
+                <p id="auth-error" class="text-center text-red-500 text-sm mt-2 h-5">&nbsp;</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <input class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" type="email" id="email" placeholder="Email Address" required>
+                <input class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" type="password" id="password" placeholder="Password" required>
+                <button type="submit" id="loginBtn" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition-colors">Sign In</button>
+            </form>
+            <div class="text-center text-sm text-gray-600">
+                <p>
+                    <span id="auth-mode-text">Don't have an account?</span>
+                    <button id="toggleAuthModeBtn" class="font-semibold text-indigo-600 hover:underline">Sign Up</button>
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- END: Authentication UI -->
+
     <!-- START: Main Application Container -->
-    <div id="app-container">
+    <div id="app-container" class="hidden">
         <div id="loading-overlay" class="hidden fixed inset-0 bg-white bg-opacity-75 z-50 flex flex-col items-center justify-center">
             <div class="loading-spinner animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-indigo-600"></div>
-            <p id="loading-message" class="mt-4 text-gray-600">Processing...</p>
+            <p class="mt-4 text-gray-600">Processing...</p>
         </div>
 
         <div class="max-w-7xl mx-auto">
             <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800">Car Flip Financial Tracker</h1>
-                    <p class="mt-2 text-gray-600">Your interactive dashboard for tracking vehicle flips, powered by Google Sheets.</p>
+                    <p class="mt-2 text-gray-600">Your interactive dashboard for tracking vehicle flips.</p>
                 </div>
                 <div class="mt-4 sm:mt-0 flex items-center gap-4">
                      <button id="loadDataBtn" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition-colors flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Reload Data
+                        Load Data
                     </button>
                     <button id="saveDataBtn" class="bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-purple-700 transition-colors flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                        Save to Sheets
+                        Save Data
+                    </button>
+                    <button id="signOutBtn" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Sign Out
                     </button>
                 </div>
             </header>
@@ -252,21 +278,24 @@
         </div>
     </div> <!-- END: Main Application Container -->
 
-    <script>
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // --- App State ---
+        let db, auth, userId;
         let vehicles = [];
         let expenses = [];
         let laborEntries = [];
         let plannedWork = [];
         let confirmCallback = null;
-        
-        // IMPORTANT: Paste your Google Apps Script Web App URL here
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0v0IfsPj2vmPOguMN4bHimIrg4WVThFflxqiOPACdrYQHYgfYzS9mwyYRW1dGuvNcMA/exec";
 
         // --- UI Elements ---
+        const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
         const loadingOverlay = document.getElementById('loading-overlay');
-        const loadingMessage = document.getElementById('loading-message');
         const notification = document.getElementById('notification');
         const notificationMessage = document.getElementById('notification-message');
         const dashboardTableBody = document.querySelector('#dashboardTable tbody');
@@ -283,14 +312,54 @@
         const hourlyRateInput = document.getElementById('hourlyRate');
 
         // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            if (WEB_APP_URL === "" || WEB_APP_URL.includes("PASTE_YOUR")) {
-                showNotification("Configuration needed: Please paste your Google Web App URL into the script.", true);
+        async function main() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBDOAD40Eq9eo9N_XQMc5qG75wDfjYngvA",
+                authDomain: "car-flip-tracker-47.firebaseapp.com",
+                projectId: "car-flip-tracker-47",
+                storageBucket: "car-flip-tracker-47.firebasestorage.app",
+                messagingSenderId: "773148296619",
+                appId: "1:773148296619:web:0efc1fb4a231c1ea3cbeee",
+                measurementId: "G-CYJDE8ETB4"
+            };
+            
+            if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
+                 authContainer.innerHTML = `<div class="p-4 text-center bg-white rounded-lg shadow-md">
+                    <p class="font-bold text-red-600">Firebase configuration is missing.</p>
+                    <p class="text-sm text-gray-600 mt-2">Please replace the placeholder credentials in the script with your own Firebase project's configuration to enable data persistence.</p>
+                    </div>`;
+                authContainer.classList.remove('hidden');
+                loadingOverlay.classList.add('hidden');
                 return;
             }
-            setupEventListeners();
-            loadAllData();
-        });
+
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            onAuthStateChanged(auth, user => {
+                if (user && !user.isAnonymous) {
+                    userId = user.uid;
+                    authContainer.classList.add('hidden');
+                    appContainer.classList.remove('hidden');
+                    // Clear data on login, prompt user to load
+                    vehicles = [];
+                    expenses = [];
+                    laborEntries = [];
+                    plannedWork = [];
+                    renderAll();
+                } else {
+                    userId = null;
+                    authContainer.classList.remove('hidden');
+                    appContainer.classList.add('hidden');
+                    vehicles = [];
+                    expenses = [];
+                    laborEntries = [];
+                    plannedWork = [];
+                    renderAll();
+                }
+            });
+        }
         
         // --- Notifications ---
         function showNotification(message, isError = false) {
@@ -300,38 +369,39 @@
             notification.classList.remove('hidden');
             setTimeout(() => {
                 notification.classList.add('hidden');
-            }, 4000);
+            }, 3000);
         }
 
         // --- Data Loading and Saving ---
         async function loadAllData() {
-            loadingMessage.textContent = "Loading data from Google Sheets...";
+            if (!userId) return;
             loadingOverlay.classList.remove('hidden');
             try {
-                const response = await fetch(WEB_APP_URL);
-                const result = await response.json();
+                const docRef = doc(db, 'users', userId);
+                const docSnap = await getDoc(docRef);
 
-                if (result.status === 'success') {
-                    const data = result.data;
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
                     vehicles = data.vehicles || [];
                     expenses = data.expenses || [];
                     laborEntries = data.laborEntries || [];
                     plannedWork = data.plannedWork || [];
                     showNotification('Data loaded successfully!');
                 } else {
-                    throw new Error(result.message || 'Failed to load data.');
+                    vehicles = []; expenses = []; laborEntries = []; plannedWork = [];
+                    showNotification('No saved data found. Starting fresh!');
                 }
                 renderAll();
             } catch (error) {
                 console.error("Error loading data: ", error);
-                showNotification(`Error loading data: ${error.message}`, true);
+                showNotification('Error loading data.', true);
             } finally {
                 loadingOverlay.classList.add('hidden');
             }
         }
 
         async function saveAllData() {
-            loadingMessage.textContent = "Saving data to Google Sheets...";
+            if (!userId) return;
             loadingOverlay.classList.remove('hidden');
             const dataToSave = {
                 vehicles,
@@ -340,24 +410,11 @@
                 plannedWork
             };
             try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    cache: 'no-cache',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', // Use text/plain for Apps Script POST
-                    },
-                    body: JSON.stringify(dataToSave)
-                });
-                const result = await response.json();
-                if (result.status === 'success') {
-                    showNotification('Data saved to Google Sheets!');
-                } else {
-                    throw new Error(result.message || 'Failed to save data.');
-                }
+                await setDoc(doc(db, 'users', userId), dataToSave);
+                showNotification('Data saved successfully!');
             } catch (error) {
                 console.error("Error saving data: ", error);
-                showNotification(`Error saving data: ${error.message}`, true);
+                showNotification('Error saving data.', true);
             } finally {
                 loadingOverlay.classList.add('hidden');
             }
@@ -627,6 +684,39 @@
 
         // --- Event Listeners Setup ---
         function setupEventListeners() {
+            // --- Auth ---
+            const loginForm = document.getElementById('loginForm');
+            const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
+            const loginBtn = document.getElementById('loginBtn');
+            const authError = document.getElementById('auth-error');
+            const authModeText = document.getElementById('auth-mode-text');
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const isRegistering = loginBtn.textContent === 'Sign Up';
+                authError.textContent = '\u00A0';
+
+                try {
+                    if (isRegistering) {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                    } else {
+                        await signInWithEmailAndPassword(auth, email, password);
+                    }
+                } catch (error) {
+                    authError.textContent = error.code.replace('auth/', '').replace(/-/g, ' ');
+                }
+            });
+
+            toggleAuthModeBtn.addEventListener('click', () => {
+                const isRegistering = loginBtn.textContent === 'Sign Up';
+                loginBtn.textContent = isRegistering ? 'Sign In' : 'Sign Up';
+                authModeText.textContent = isRegistering ? "Don't have an account?" : "Already have an account?";
+                toggleAuthModeBtn.textContent = isRegistering ? 'Sign Up' : 'Sign In';
+            });
+
+            document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
             document.getElementById('loadDataBtn').addEventListener('click', loadAllData);
             document.getElementById('saveDataBtn').addEventListener('click', saveAllData);
 
@@ -820,6 +910,10 @@
                 }
             });
         }
+
+        // --- Start App ---
+        main();
+        setupEventListeners();
     </script>
 </body>
 </html>
