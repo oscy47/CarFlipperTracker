@@ -7,3 +7,12 @@ const firebaseConfig = {
                 appId: "1:773148296619:web:0efc1fb4a231c1ea3cbeee",
                 measurementId: "G-CYJDE8ETB4"
             };
+
+
+
+api shit for google sheets
+
+            https://script.google.com/macros/s/AKfycbw0v0IfsPj2vmPOguMN4bHimIrg4WVThFflxqiOPACdrYQHYgfYzS9mwyYRW1dGuvNcMA/exec
+
+            AKfycbw0v0IfsPj2vmPOguMN4bHimIrg4WVThFflxqiOPACdrYQHYgfYzS9mwyYRW1dGuvNcMA
+
